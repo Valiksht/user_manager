@@ -1,0 +1,40 @@
+$kind: http-request
+url: http://127.0.0.1:8000/teams
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Первая команда\",\r
+
+    \    \"description\": \"Первая тестовая команда которая создается для спасения человечества\",\r
+
+    \    \"invite_code\": \"password\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{Super_token}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить team_id в переменную\", function () {\r
+
+      \r
+
+      \    var jsonData = pm.response.json();\r
+
+      \r
+
+      \    pm.collectionVariables.set(\"team_id\", jsonData.id);\r
+
+      \r
+
+      \    console.log(\"team_id сохранен: \" + pm.collectionVariables.get(\"team_id\"));\r
+
+      \r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 2000

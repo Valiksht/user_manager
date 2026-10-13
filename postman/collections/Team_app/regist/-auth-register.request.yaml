@@ -1,0 +1,43 @@
+$kind: http-request
+name: /auth/register
+url: http://127.0.0.1:8000/auth/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"rubanov.valentin@ya.ru\",\r
+
+    \    \"username\": \"valik\",\r
+
+    \    \"first_name\": \"Валентин\",\r
+
+    \    \"last_name\": \"Рубанов\",\r
+
+    \    \"password\": \"11111111\",\r
+
+    \    \"age\": 30\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить user_id в переменную\", function () {\r
+
+      \r
+
+      \    var jsonData = pm.response.json();\r
+
+      \r
+
+      \    pm.collectionVariables.set(\"user_id\", jsonData.id);\r
+
+      \r
+
+      \    console.log(\"user_id сохранен: \" + pm.collectionVariables.get(\"user_id\"));\r
+
+      \r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 1000

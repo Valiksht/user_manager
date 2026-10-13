@@ -1,0 +1,41 @@
+$kind: http-request
+name: /auth/login
+url: http://127.0.0.1:8000/auth/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"rubanov.valentin@ya.ru\",\r
+
+    \    \"password\": \"11111111\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить access_token в переменную\", function () {\r
+
+      \    // Парсим JSON из тела ответа\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    // Сохраняем значение access_token в глобальную переменную\r
+
+      \    pm.collectionVariables.set(\"access_token\", jsonData.access_token);\r
+
+      \r
+
+      \    \r
+
+      \    console.log(\"Токен сохранен: \" + pm.collectionVariables.get(\"access_token\"));\r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 2855

@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://127.0.0.1:8000/teams/{{team_id}}/members
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+settings: {}
+order: 7000

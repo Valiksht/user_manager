@@ -1,0 +1,12 @@
+$kind: http-request
+url: http://127.0.0.1:8000/teams/{{team_id}}/tasks/{{task_id}}/
+method: PATCH
+body:
+  type: json
+  content: "{\r\n    \"status\": \"done\"\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+settings: {}
+order: 7794

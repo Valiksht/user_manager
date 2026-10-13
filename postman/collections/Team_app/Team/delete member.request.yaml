@@ -1,0 +1,8 @@
+$kind: http-request
+url: http://127.0.0.1:8000/teams/{{team_id}}/members/{{admin_id}}
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{Super_token}}"
+order: 8000

@@ -1,0 +1,10 @@
+$kind: collection
+variables:
+  access_token: ""
+  token_type: ""
+  Super_token: ""
+  Super_type: ""
+  id: ""
+  admin_id: ""
+  team_id: ""
+  admin_token: ""

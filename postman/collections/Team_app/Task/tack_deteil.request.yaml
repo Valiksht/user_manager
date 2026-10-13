@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://127.0.0.1:8000/tasks/{{tast_id}}
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+settings: {}
+order: 5000

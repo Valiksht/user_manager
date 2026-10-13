@@ -1,0 +1,43 @@
+$kind: http-request
+name: /auth/register-admin
+url: http://127.0.0.1:8000/auth/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"admin.valentin@ya.ru\",\r
+
+    \    \"username\": \"valik-admin\",\r
+
+    \    \"first_name\": \"Адд\",\r
+
+    \    \"last_name\": \"Мин\",\r
+
+    \    \"password\": \"11111111\",\r
+
+    \    \"age\": 30\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить admin_id в переменную\", function () {\r
+
+      \r
+
+      \    var jsonData = pm.response.json();\r
+
+      \r
+
+      \    pm.collectionVariables.set(\"admin_id\", jsonData.id);\r
+
+      \r
+
+      \    console.log(\"admin_id сохранен: \" + pm.collectionVariables.get(\"admin_id\"));\r
+
+      \r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 7000

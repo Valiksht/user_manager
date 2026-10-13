@@ -1,0 +1,42 @@
+$kind: http-request
+url: http://127.0.0.1:8000/teams/{{team_id}}/tasks
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"assignee_id\": {{user_id}},\r
+
+    \    \"title\": \"Важная задача\",\r
+
+    \    \"description\": \"Первая важная задача которая создается для спасения человечества\",\r
+
+    \    \"due_date\": \"2026-10-01\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{Super_token}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить task_id в переменную\", function () {\r
+
+      \r
+
+      \    var jsonData = pm.response.json();\r
+
+      \r
+
+      \    pm.collectionVariables.set(\"task_id\", jsonData.id);\r
+
+      \r
+
+      \    console.log(\"task_id сохранен: \" + pm.collectionVariables.get(\"task_id\"));\r
+
+      \r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 1000

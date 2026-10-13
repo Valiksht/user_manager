@@ -1,0 +1,45 @@
+$kind: http-request
+name: /auth/login - admin
+url: http://127.0.0.1:8000/auth/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"admin.valentin@ya.ru\",\r
+
+    \    \"password\": \"11111111\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: ""
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить admin_token в переменную\", function () {\r
+
+      \    // Парсим JSON из тела ответа\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    \r
+
+      \    // Сохраняем значение access_token в глобальную переменную\r
+
+      \    pm.collectionVariables.set(\"admin_token\", jsonData.access_token);\r
+
+      \    \r
+
+      \    // Опционально: можно сохранить и token_type\r
+
+      \    pm.collectionVariables.set(\"token_type\", jsonData.token_type);\r
+
+      \    \r
+
+      \    console.log(\"Токен сохранен: \" + pm.collectionVariables.get(\"admin_token\"));\r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 7384

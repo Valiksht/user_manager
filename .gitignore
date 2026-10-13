@@ -1,0 +1,17 @@
+help.md
+
+# Окружение
+.env 
+.venv/ 
+venv/ 
+
+# Кэш
+__pycache__/ 
+.pytest_cache/ 
+*.pyc
+
+# IED
+.vscode/
+
+# БД
+*.sqlite

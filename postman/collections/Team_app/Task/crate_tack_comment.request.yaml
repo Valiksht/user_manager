@@ -1,0 +1,16 @@
+$kind: http-request
+url: http://127.0.0.1:8000/tasks/{{task_id}}/comments
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"text\": \"Очень полезный комментарий\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+settings: {}
+order: 6000

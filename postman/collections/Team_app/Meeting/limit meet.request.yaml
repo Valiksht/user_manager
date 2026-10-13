@@ -1,0 +1,11 @@
+$kind: http-request
+url: http://127.0.0.1:8000/calendar?starts_at=2026-09-27
+method: GET
+queryParams:
+  starts_at: 2026-09-27
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+settings: {}
+order: 5000

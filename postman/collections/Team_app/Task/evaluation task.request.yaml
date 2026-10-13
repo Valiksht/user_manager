@@ -1,0 +1,18 @@
+$kind: http-request
+url: http://127.0.0.1:8000/tasks/1/evaluation
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"score\": 5,\r
+
+    \    \"comment\": \"Задача выполнена полностью и в срок\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{Super_token}}"
+settings: {}
+order: 8000

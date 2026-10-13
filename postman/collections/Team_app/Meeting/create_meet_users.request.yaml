@@ -1,0 +1,24 @@
+$kind: http-request
+url: http://127.0.0.1:8000/calendar/{{team_id}}
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Общий сбор\",\r
+
+    \    \"description\": \"Мстители объявляют общий сбор\",\r
+
+    \    \"starts_at\": \"2027-09-25T12:00:00\",\r
+
+    \    \"ends_at\": \"2027-09-25T14:00:00\",\r
+
+    \    \"users\": [{{user_id}}]\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{Super_token}}"
+settings: {}
+order: 796
