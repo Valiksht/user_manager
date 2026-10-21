@@ -90,3 +90,7 @@ pytest -n auto
 или
 pytest -n 4
 
+### Переименовать ветку
+git branch -M main
+git push -u origin main --force
+

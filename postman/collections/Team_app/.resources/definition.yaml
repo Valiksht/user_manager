@@ -8,3 +8,5 @@ variables:
   admin_id: ""
   team_id: ""
   admin_token: ""
+  user_id: ""
+  task_id: ""

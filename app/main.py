@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.api.meerings import router as meet_router
+from app.api.meetings import router as meet_router
 from app.api.tasks import router as task_router
 from app.api.teams import router as team_router
 from app.api.users import auth_router, user_router

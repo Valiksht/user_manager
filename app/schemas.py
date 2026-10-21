@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.models import TaskStatus
+
 
 class UserCreate(BaseModel):
     """
@@ -288,6 +290,20 @@ class EvaluationResponse(BaseModel):
     comment: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+class TaskDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    team_id: int
+    assignee_id: int | None
+    title: str
+    description: str | None
+    status: TaskStatus
+    due_date: date | None
+
+    comments: list[CommentResponse]
+    evaluation: EvaluationResponse | None
 
 
 class MeetCreate(BaseModel):
