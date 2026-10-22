@@ -7,7 +7,8 @@ body:
 
     \    \"name\": \"Первая команда\",\r
 
-    \    \"description\": \"Первая тестовая команда которая создается для спасения человечества\",\r
+    \    \"description\": \"Первая тестовая команда которая создается для
+    спасения человечества\",\r
 
     \    \"invite_code\": \"password\"\r
 
@@ -30,7 +31,8 @@ scripts:
 
       \r
 
-      \    console.log(\"team_id сохранен: \" + pm.collectionVariables.get(\"team_id\"));\r
+      \    console.log(\"team_id сохранен: \" +
+      pm.collectionVariables.get(\"team_id\"));\r
 
       \r
 

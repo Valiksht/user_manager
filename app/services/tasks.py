@@ -109,6 +109,19 @@ async def update_task(task_data, team_id, user_id, task, db):
     manager_role = await get_manager_role(db)
     perission = exist_user.role_id == manager_role.id
     update_data = task_data.model_dump(exclude_unset=True)
+
+    if not perission and task.assignee_id != user_id:
+        raise PermissionDeniedExeption(
+            'Вы не можете изменить эту задачу'
+        )
+    update_data = task_data.model_dump(exclude_unset=True)
+    if not perission and not set(update_data).issubset(
+        {'status'}
+    ):
+        raise PermissionDeniedExeption(
+            'Вы можете изменить только статус задачи'
+        )
+
     if 'assignee_id' in update_data and update_data['assignee_id']:
         current_team = await user_in_team(
             team_id, task_data.assignee_id, db
@@ -128,17 +141,6 @@ async def update_task(task_data, team_id, user_id, task, db):
         )
 
 
-    if not perission and task.assignee_id != user_id:
-        raise PermissionDeniedExeption(
-            'Вы не можете изменить эту задачу'
-        )
-    update_data = task_data.model_dump(exclude_unset=True)
-    if not perission and not set(update_data).issubset(
-        {'status'}
-    ):
-        raise PermissionDeniedExeption(
-            'Вы можете изменить только статус задачи'
-        )
     for field, value in update_data.items():
         setattr(task, field, value)
     await db.commit()

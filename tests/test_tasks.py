@@ -1,5 +1,8 @@
 import pytest
 
+from app.services.auth import create_jwt_token
+from tests.conftest import get_future_date
+
 
 async def test_create_task(
     create_team_with_users,
@@ -44,7 +47,7 @@ async def test_create_task(
         ('title', 'Новое название', 'manager', True),
         ('description', 'Новое описание', 'manager', True),
         ('assignee_id', 2, 'manager', True),
-        ('due_date', '2026-10-15', 'manager', True),
+        ('due_date', get_future_date().isoformat(), 'manager', True),
         ('status', 'DONE', 'manager', True),
         ('title', 'Новое название', 'assignee', False),
         (
@@ -54,7 +57,7 @@ async def test_create_task(
             False,
         ),
         ('assignee_id', 2, 'assignee', False),
-        ('due_date', '2026-10-15', 'assignee', False),
+        ('due_date', get_future_date().isoformat(), 'assignee', False),
         ('status', 'DONE', 'assignee', True),
     ],
 )
@@ -150,3 +153,66 @@ async def test_get_all_task(
             response_data[0]['assignee_id']
             == create_jwt['user'].id
         )
+
+
+
+
+async def test_get_task_detail_success(
+    create_task,
+    create_comment,
+    create_jwt,
+    client,
+):
+    response = await client.get(
+        f'/tasks/{create_task.id}',
+        headers={
+            'Authorization': (
+                f'Bearer {create_jwt["token"]["access_token"]}'
+            ),
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data['id'] == create_task.id
+    assert data['title'] == create_task.title
+    assert len(data['comments']) == 1
+    assert data['comments'][0]['text'] == create_comment.text
+    assert data['evaluation'] is None
+
+
+async def test_get_task_detail_user_not_in_team(
+    create_task,
+    create_users_not_in_team,
+    client,
+):
+    token = create_jwt_token(create_users_not_in_team.id)
+    response = await client.get(
+        f'/tasks/{create_task.id}',
+        headers={
+            'Authorization': f'Bearer {token["access_token"]}',
+        },
+    )
+    assert response.status_code == 403
+
+
+async def test_get_task_detail_task_not_found(
+    create_jwt,
+    client,
+):
+    response = await client.get(
+        '/tasks/999999',
+        headers={
+            'Authorization': (
+                f'Bearer {create_jwt["token"]["access_token"]}'
+            ),
+        },
+    )
+    assert response.status_code == 403
+
+
+async def test_get_task_detail_unauthorized(
+    create_task,
+    client,
+):
+    response = await client.get(f'/tasks/{create_task.id}')
+    assert response.status_code == 401

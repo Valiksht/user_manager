@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pytest_asyncio
@@ -40,6 +40,18 @@ engine = create_async_engine(
     connect_args={'check_same_thread': False},
 )
 
+def get_future_date(hour: int | None = None):
+    f_date = datetime.now().date() + timedelta(days=2)
+    if hour is not None:
+        return datetime(
+            f_date.year,
+            f_date.month,
+            f_date.day,
+            hour,
+            # tzinfo=timezone.utc
+        )
+    return f_date
+    
 
 @pytest_asyncio.fixture(autouse=True)
 async def clean_database():
@@ -170,6 +182,20 @@ async def create_users(user_data, db):
     await db.commit()
     return users
 
+@pytest_asyncio.fixture
+async def create_users_not_in_team(db):
+    user = User(
+        email='dima@test.ru',
+        username='dimauser',
+        first_name='Dima',
+        last_name='Smirnov',
+        password_hash=hash_password('55555555'),
+        age=22,
+    )
+    db.add(user)
+    await db.commit()
+    return user
+
 
 @pytest_asyncio.fixture
 async def create_jwt(create_users):
@@ -251,6 +277,8 @@ async def create_team(team_data, create_super_user, db):
     return team
 
 
+
+
 @pytest_asyncio.fixture
 async def create_team_with_users(
     create_team, create_users, db
@@ -271,6 +299,48 @@ async def create_team_with_users(
     await db.commit()
     return {
         'team_obj': create_team,
+        'team_user': team_user_list,
+    }
+
+@pytest_asyncio.fixture
+async def create_second_team_with_users(
+    team_data, create_super_user, create_users, db
+):
+    manager_role = await db.scalar(
+        select(Role).where(Role.name == 'manager')
+    )
+    team = Team(
+        name='second_team',
+        description=team_data['description'],
+        invite_code=hash_password(team_data['invite_code']),
+    )
+    db.add(team)
+    await db.flush()
+
+    team_user = TeamUser(
+        user_id=create_super_user.id,
+        team_id=team.id,
+        role_id=manager_role.id,
+    )
+    db.add(team_user)
+    await db.commit()
+    await db.refresh(team)
+    member_role = await db.scalar(
+        select(Role).where(Role.name == 'member')
+    )
+    team_user_list = []
+    for user in create_users:
+        team_user = TeamUser(
+            role_id=member_role.id,
+            team_id=team.id,
+            user_id=user.id,
+        )
+        db.add(team_user)
+        team_user_list.append(team_user)
+
+    await db.commit()
+    return {
+        'team_obj': team,
         'team_user': team_user_list,
     }
 
@@ -334,8 +404,8 @@ def meet_data():
     MEET_DATA = {
         'name': 'Планёрка',
         'description': 'Обсуждение задач команды',
-        'starts_at': '2026-10-01T10:00:00',
-        'ends_at': '2026-10-01T11:00:00',
+        'starts_at': get_future_date(10).isoformat(),
+        'ends_at': get_future_date(11).isoformat(),
     }
     return MEET_DATA
 
@@ -351,8 +421,8 @@ async def create_meeting(
         organizer_id=get_super_user_token['user'].id,
         name='Первая встреча',
         description='Первая встреча',
-        starts_at=datetime(2026, 10, 1, 10, 0, tzinfo=timezone.utc),
-        ends_at=datetime(2026, 10, 1, 11, 0, tzinfo=timezone.utc),
+        starts_at=get_future_date(10),
+        ends_at=get_future_date(11),
     )
 
     db.add(meeting)

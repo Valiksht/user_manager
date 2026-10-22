@@ -6,4 +6,4 @@ auth:
   credentials:
     token: "{{access_token}}"
 settings: {}
-order: 1000
+order: 4000

@@ -1,35 +1,23 @@
-from datetime import date
-
 from fastapi import (
-    APIRouter,
-    Depends,
     HTTPException,
     status,
 )
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.crud.teams import get_team_by_name, get_team_members, get_team_with_user, user_in_team
-from app.database import get_db
+from app.crud.teams import (
+    get_team_by_name,
+    get_team_members,
+    get_team_with_user,
+    user_in_team,
+)
 from app.dependencies.role import get_manager_role
-from app.models import Role, Task, Team, TeamUser, User
+from app.models import Team, TeamUser
 from app.schemas import (
     RoleInTeamResponse,
-    TaskCreate,
-    TaskResponse,
-    TaskUpdate,
-    TeamCreate,
-    TeamJoin,
     TeamJoinResponse,
     TeamResponseDetail,
-    TeamResponseList,
     UserResponse,
 )
 from app.services.auth import (
-    get_current_admin,
-    get_current_user,
-    get_id_from_token,
     hash_password,
     verify_password,
 )
@@ -37,6 +25,7 @@ from app.services.hendlers import (
     NotFoundItemExeption,
     PermissionDeniedExeption,
 )
+
 
 async def create_new_team(
     team_data, user_creater, manager_role, db    

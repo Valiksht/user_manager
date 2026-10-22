@@ -19,4 +19,4 @@ auth:
   credentials:
     token: "{{Super_token}}"
 settings: {}
-order: 669
+order: 1000

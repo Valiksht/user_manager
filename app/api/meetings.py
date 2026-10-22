@@ -101,4 +101,4 @@ async def create_meet(
     Можно указать конкретных участников встречи.
     Если список участников не указан, в встречу добавляются все участники команды.
     """
-    return await create_new_meet(meet_data, team.id, user.id, db)
+    return await create_new_meet(meet_data, team.id, user, db)

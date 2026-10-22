@@ -81,7 +81,7 @@ async def test_make_admin_forbidden_for_regular_user(
 
     assert response.status_code == 403
     assert response.json()['detail'] == (
-        'Только superuser может назначать администратора'
+        'Операция доступна только пользователю с правами superuser'
     )
 
 

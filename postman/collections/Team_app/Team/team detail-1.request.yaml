@@ -1,4 +1,5 @@
 $kind: http-request
+name: team detail
 url: http://127.0.0.1:8000/teams/{{team_id}}
 method: GET
 auth:
@@ -6,4 +7,4 @@ auth:
   credentials:
     token: "{{access_token}}"
 settings: {}
-order: 6000
+order: 7169

@@ -1,4 +1,7 @@
 import pytest
+from datetime import datetime, timedelta
+
+from tests.conftest import get_future_date
 
 
 async def test_create_meet(
@@ -60,8 +63,8 @@ async def test_create_meet_by_member(
     'starts_at, ends_at, expected_detail',
     [
         (
-            '2026-10-01T10:00:00',
-            '2026-10-01T09:00:00',
+            get_future_date(10).isoformat(),
+            get_future_date(9).isoformat(),
             'Время окончания должно быть позже времени начала',
         ),
         (
@@ -121,7 +124,7 @@ async def test_create_overlapping_meet(
     assert response.status_code == 409
     assert (
         response.json()['detail']
-        == 'Время встречи пересекается с существующей встречей'
+        == 'Время встречи пересекается с существующей встречей в команде'
     )
 
 
@@ -157,7 +160,33 @@ async def test_create_meet_with_selected_users(
     assert user_ids == {
         create_users[0].id,
         create_users[1].id,
+        get_super_user_token['user'].id,
     }
+
+async def test_create_meet_with_users_not_in_team(
+    create_team_with_users,
+    get_super_user_token,
+    create_users_not_in_team,
+    meet_data,
+    client,
+):
+    meet_url = (
+        f'/calendar/{create_team_with_users["team_obj"].id}'
+    )
+    meet_data['users'] = [
+        create_users_not_in_team.id,
+    ]
+    response = await client.post(
+        meet_url,
+        json=meet_data,
+        headers={
+            'Authorization': (
+                f'Bearer '
+                f'{get_super_user_token["token"]["access_token"]}'
+            ),
+        },
+    )
+    assert response.status_code == 404
 
 
 async def test_get_calendar(
@@ -191,7 +220,7 @@ async def test_get_calendar_starts_at_filter(
     response = await client.get(
         '/calendar',
         params={
-            'starts_at': '2026-10-02T00:00:00',
+            'starts_at': (datetime.now()+timedelta(days=3)).isoformat(),
         },
         headers={
             'Authorization': (
@@ -221,3 +250,28 @@ async def test_get_my_meetings(
     response_data = response.json()
     assert len(response_data) == 1
     assert response_data[0]['id'] == create_user_meeting.id
+
+async def test_create_meet_with_users_in_one_time(
+    create_user_meeting,
+    create_second_team_with_users,
+    get_super_user_token,
+    meet_data,
+    client,
+):
+    response = await client.post(
+        f'/calendar/{create_second_team_with_users['team_obj'].id}',
+        json=meet_data,
+        headers={
+            'Authorization': (
+                f'Bearer '
+                f'{get_super_user_token["token"]["access_token"]}'
+            ),
+        },
+    )
+
+    assert response.status_code == 409
+    assert (
+            response.json()['detail']
+            == 'Время встречи пересекается с существующей встречей учасника встречи'
+        )
+
