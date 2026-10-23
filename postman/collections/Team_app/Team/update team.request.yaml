@@ -39,4 +39,4 @@ scripts:
       });"
     language: text/javascript
 settings: {}
-order: 2000
+order: 11000

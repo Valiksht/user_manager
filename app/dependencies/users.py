@@ -26,11 +26,12 @@ async def check_user_unique(
 ):
     user_exist = await get_user_from_email_or_username(user_data, db)
     if user_exist:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Email или username уже занят',
-            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Email или username уже занят',
+        )
     return user_data
+
 
 async def ckeck_user_password(
     user_data: UserLogin,
@@ -56,6 +57,7 @@ async def ckeck_user_password(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail='Неверный email или пароль',
     )
+
 
 async def get_user_obj_by_id(
     user_id: int,

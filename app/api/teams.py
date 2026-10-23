@@ -7,11 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies.role import (
+    get_curret_manager_by_team,
     get_manager_role,
     get_member_role,
 )
 from app.dependencies.task import get_task_obj_with_team_id
 from app.dependencies.team import get_team_obj
+from app.dependencies.users import get_user_obj_by_id
 from app.models import Role, Task, Team, User
 from app.schemas import (
     RoleInTeamResponse,
@@ -23,6 +25,8 @@ from app.schemas import (
     TeamJoinResponse,
     TeamResponseDetail,
     TeamResponseList,
+    TeamRoleUpdate,
+    TeamUpdate,
     UserResponse,
 )
 from app.services.auth import (
@@ -38,6 +42,8 @@ from app.services.teams import (
     team_detail,
     team_detail_members,
     teams_with_user,
+    update_role_in_team,
+    update_team,
 )
 
 router = APIRouter(prefix='/teams', tags=['Team'])
@@ -67,6 +73,45 @@ async def team_create(
     создание команд обычными пользователями.
     """
     team = await create_new_team(team_data, user, manager_role, db)
+    return TeamResponseDetail(
+        id=team.id,
+        name=team.name,
+        description=team.description,
+        members=[
+            RoleInTeamResponse(
+                name=manager_role.name,
+                description=manager_role.description,
+                members=[UserResponse.model_validate(user)],
+            )
+        ],
+    )
+
+
+@router.patch(
+    '/{team_id}',
+    response_model=TeamResponseDetail,
+    status_code=status.HTTP_201_CREATED,
+    summary='Создать команду.',
+)
+async def update_create(
+    team_id: int,
+    team_data: TeamUpdate,
+    user: User = Depends(get_current_admin),
+    manager_role: Role = Depends(get_manager_role),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Создать новую команду.
+
+    Операция доступна только пользователю с правами администратора.
+    Создатель команды автоматически добавляется в неё с ролью manager.
+
+    Название команды должно быть уникальным.
+
+    Операция ограницена правом администратора, что бы ограничить
+    создание команд обычными пользователями.
+    """
+    team = await update_team(team_id, team_data, db)
     return TeamResponseDetail(
         id=team.id,
         name=team.name,
@@ -137,7 +182,7 @@ async def detail_team(
 ):
     """
     Получить подробную информацию об указанной команде.
-    
+
     Доступ к информации имеют только пользователи, состоящие в этой команде.
     В ответе возвращается информация о команде и её участниках,
     сгруппированных по ролям.
@@ -157,11 +202,35 @@ async def team_members(
 ):
     """
     Получить список участников указанной команды.
-    
+
     Доступ к списку имеют только участники этой команды.
     Пользователи в ответе сгруппированы по назначенным им ролям.
     """
     return await team_detail_members(team, user_id, db)
+
+
+@router.patch(
+    '/{team_id}/members/{user_id}',
+    response_model=RoleInTeamResponse,
+    summary='Изменить задачу.',
+)
+async def update_role(
+    role_data: TeamRoleUpdate,
+    team_id: int,
+    user: User = Depends(get_user_obj_by_id),
+    manager_user: User = Depends(get_curret_manager_by_team),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Изменить существующую задачу команды.
+
+    Менеджер команды может изменять доступные поля задачи.
+    Исполнитель задачи может изменять только её статус.
+
+    Пользователь не может изменять задачи, которые не относятся к его команде
+    или к которым у него нет необходимых прав.
+    """
+    return await update_role_in_team(role_data, team_id, user, db)
 
 
 @router.post(
@@ -178,10 +247,10 @@ async def create_tasks(
 ):
     """
     Создать новую задачу и назначить её участнику команды.
-    
+
     Создавать задачи может только менеджер указанной команды.
     Назначаемый пользователь должен состоять в этой команде.
-    
+
     Дата выполнения задачи не может быть раньше текущей даты.
     """
     return await create_new_tast(task_data, team.id, user.id, db)
@@ -201,10 +270,10 @@ async def update_tasks(
 ):
     """
     Изменить существующую задачу команды.
-    
+
     Менеджер команды может изменять доступные поля задачи.
     Исполнитель задачи может изменять только её статус.
-    
+
     Пользователь не может изменять задачи, которые не относятся к его команде
     или к которым у него нет необходимых прав.
     """
@@ -224,10 +293,10 @@ async def remove_team_member(
 ):
     """
     Удалить пользователя из указанной команды.
-    
+
     Операция доступна только менеджеру команды.
     Менеджер не может удалить самого себя из команды.
-    
+
     Если указанный пользователь не состоит в команде, возвращается ошибка.
     """
     return await remove_member(team_id, user_id, current_user, db)

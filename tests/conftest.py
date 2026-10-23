@@ -1,6 +1,5 @@
 import os
 from datetime import date, datetime, timedelta
-from pathlib import Path
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -9,7 +8,9 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
+from app.config import settings
 from app.database import get_db
 from app.main import app
 from app.models import (
@@ -29,15 +30,14 @@ from app.services.auth import (
     hash_password,
 )
 
-worker_id = os.getenv('PYTEST_XDIST_WORKER', 'master')
-
-TEST_DATABASE_URL = f'sqlite+aiosqlite:///./test_{worker_id}.db'
-
-# TEST_DATABASE_URL = 'sqlite+aiosqlite:///./test.db'
+TEST_DATABASE_URL = (
+    settings.database_url.rsplit('/', 1)[0]
+    + f'/team_manager_test'
+)
 
 engine = create_async_engine(
     TEST_DATABASE_URL,
-    connect_args={'check_same_thread': False},
+    poolclass=NullPool,
 )
 
 def get_future_date(hour: int | None = None):
@@ -48,47 +48,39 @@ def get_future_date(hour: int | None = None):
             f_date.month,
             f_date.day,
             hour,
-            # tzinfo=timezone.utc
         )
     return f_date
-    
+
 
 @pytest_asyncio.fixture(autouse=True)
 async def clean_database():
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
         await connection.run_sync(Base.metadata.create_all)
+
     async with AsyncSession(
         bind=engine,
         expire_on_commit=False,
     ) as db:
-        base_roles = (
+        db.add_all([
             Role(
-                name='manager',
-                description='Управляет командой',
+                name="manager",
+                description="Управляет командой",
             ),
             Role(
-                name='member',
-                description='Член команды',
+                name="member",
+                description="Член команды",
             ),
-        )
-
-        db.add_all(base_roles)
+        ])
         await db.commit()
 
     yield
 
-@pytest_asyncio.fixture(scope='session', autouse=True)
+
+@pytest_asyncio.fixture(autouse=True)
 async def cleanup_test_database():
-    worker_id = os.getenv('PYTEST_XDIST_WORKER', 'master')
-    db_path = Path(f'test_{worker_id}.db')
-
     yield
-
     await engine.dispose()
-
-    if db_path.exists():
-        db_path.unlink()    
 
 
 @pytest_asyncio.fixture
@@ -181,6 +173,7 @@ async def create_users(user_data, db):
         users.append(user)
     await db.commit()
     return users
+
 
 @pytest_asyncio.fixture
 async def create_users_not_in_team(db):
@@ -277,12 +270,8 @@ async def create_team(team_data, create_super_user, db):
     return team
 
 
-
-
 @pytest_asyncio.fixture
-async def create_team_with_users(
-    create_team, create_users, db
-):
+async def create_team_with_users(create_team, create_users, db):
     member_role = await db.scalar(
         select(Role).where(Role.name == 'member')
     )
@@ -301,6 +290,7 @@ async def create_team_with_users(
         'team_obj': create_team,
         'team_user': team_user_list,
     }
+
 
 @pytest_asyncio.fixture
 async def create_second_team_with_users(
@@ -357,9 +347,7 @@ def task_data(create_users):
 
 
 @pytest_asyncio.fixture
-async def create_task(
-    task_data, create_team_with_users, db
-):
+async def create_task(task_data, create_team_with_users, db):
     task = Task(
         team_id=create_team_with_users['team_obj'].id,
         assignee_id=task_data['assignee_id'],

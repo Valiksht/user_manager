@@ -21,14 +21,18 @@ async def create_user(user_data, db):
     await db.refresh(user)
     return user
 
+
 def get_token(user):
     return create_jwt_token(user.id)
+
 
 async def get_user_deteil(user_id, db):
     return await user_deteil(user_id, db)
 
+
 async def get_user_list(db):
     return await user_list(db)
+
 
 async def update_user_from_admin(user, db):
     user.is_admin = True

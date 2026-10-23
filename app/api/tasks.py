@@ -2,21 +2,13 @@ from fastapi import (
     APIRouter,
     Depends,
 )
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies.role import get_curret_manager_by_task
 from app.dependencies.task import get_task_obj_with_user_odj
 from app.models import (
-    Comment,
-    Evaluation,
-    Role,
     Task,
-    TaskStatus,
-    Team,
-    TeamUser,
     User,
 )
 from app.schemas import (
@@ -68,16 +60,16 @@ async def get_my_tasks(
     summary='Получить данные о задаче.',
 )
 async def get_task_detail(
-        task_id: int,
-        user_id: int = Depends(get_id_from_token),
-        db: AsyncSession = Depends(get_db),
+    task_id: int,
+    user_id: int = Depends(get_id_from_token),
+    db: AsyncSession = Depends(get_db),
 ):
     """
-    Получить подробные данные о задаче, 
+    Получить подробные данные о задаче,
     включая коментарии и оценку.
     """
     return await task_detail(task_id, user_id, db)
-    
+
 
 @router.post(
     '/{task_id}/comments',
@@ -92,7 +84,7 @@ async def task_comment(
 ):
     """
     Добавить комментарий к указанной задаче.
-    
+
     Добавлять комментарии могут только участники команды,
     к которой относится задача.
     Комментарий сохраняется с указанием автора.
@@ -112,7 +104,7 @@ async def get_comments(
 ):
     """
     Получить список комментариев к указанной задаче.
-    
+
     Доступ к комментариям имеют только участники команды,
     к которой относится задача.
     """
@@ -132,10 +124,10 @@ async def task_evaluation(
 ):
     """
     Оценить выполненную задачу.
-    
+
     Оценку может выставить только менеджер команды,
     к которой относится задача.
-    
+
     Оценить можно только задачу со статусом DONE.
     Для одной задачи может быть создана только одна оценка.
     """
@@ -154,10 +146,10 @@ async def get_evaluation(
 ):
     """
     Получить оценку указанной задачи.
-    
+
     Доступ к оценке имеют только участники команды,
     к которой относится задача.
-    
+
     Если для задачи ещё не создана оценка, возвращается null.
     """
     return await get_task_evaluation(task.id, db)
@@ -174,7 +166,7 @@ async def get_all_evaluation_me(
 ):
     """
     Получить все оценки задач текущего пользователя.
-    
+
     В ответ возвращается список оценок, выставленных задачам,
     исполнителем которых является текущий пользователь.
     """

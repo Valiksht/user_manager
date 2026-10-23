@@ -17,5 +17,5 @@ async def get_team_obj(
         )
     )
     if not team:
-        raise NotFoundItemExeption('Команды не существует')   
+        raise NotFoundItemExeption('Команды не существует')
     return team

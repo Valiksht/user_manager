@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     """
     Данные для регистрации нового пользователя.
     """
+
     email: EmailStr
     username: str = Field(
         min_length=3,
@@ -41,6 +42,7 @@ class UserLogin(BaseModel):
     """
     Данные для авторизации пользователя.
     """
+
     email: EmailStr
     password: str
 
@@ -49,6 +51,7 @@ class UserResponse(BaseModel):
     """
     Данные пользователя, возвращаемые API.
     """
+
     id: int
     email: EmailStr
     username: str
@@ -65,6 +68,7 @@ class UserSmallResponse(BaseModel):
     Краткая информация о пользователе.
     Используется при отображении пользователей в связанных объектах.
     """
+
     id: int
     username: str
     first_name: str
@@ -77,6 +81,7 @@ class Token(BaseModel):
     """
     Данные авторизационного токена.
     """
+
     access_token: str
     token_type: str
 
@@ -85,6 +90,7 @@ class RoleInTeamResponse(BaseModel):
     """
     Роль пользователя внутри команды и список пользователей с этой ролью.
     """
+
     name: str
     description: str | None
     members: list[UserResponse]
@@ -96,6 +102,7 @@ class TeamCreate(BaseModel):
     """
     Данные для создания новой команды.
     """
+
     name: str = Field(
         min_length=4,
         max_length=100,
@@ -116,6 +123,7 @@ class TeamUpdate(BaseModel):
     """
     Данные для изменения команды.
     """
+
     name: str | None = Field(
         default=None,
         description='Новое название команды.',
@@ -134,6 +142,7 @@ class TeamJoin(BaseModel):
     """
     Данные для вступления пользователя в команду.
     """
+
     invite_code: str = Field(
         min_length=4,
         max_length=100,
@@ -145,6 +154,7 @@ class TeamResponseList(BaseModel):
     """
     Краткая информация о команде.
     """
+
     id: int
     name: str
     description: str | None
@@ -156,6 +166,7 @@ class TeamResponseDetail(BaseModel):
     """
     Подробная информация о команде с распределением участников по ролям.
     """
+
     id: int
     name: str
     description: str | None
@@ -168,6 +179,7 @@ class TeamJoinResponse(BaseModel):
     """
     Результат вступления пользователя в команду.
     """
+
     message: str
     team: str
     username: str
@@ -178,15 +190,15 @@ class TeamRoleUpdate(BaseModel):
     """
     Данные для изменения роли пользователя в команде.
     """
-    user_id: int
-    team_id: int
-    role_id: int
+
+    role_name: str
 
 
 class TaskCreate(BaseModel):
     """
     Данные для создания новой задачи.
     """
+
     assignee_id: int = Field(
         description='ID пользователя, которому назначается задача.',
     )
@@ -206,6 +218,7 @@ class TaskUpdate(BaseModel):
     """
     Данные для изменения существующей задачи.
     """
+
     title: str | None = Field(
         default=None,
         max_length=200,
@@ -233,6 +246,7 @@ class TaskResponse(BaseModel):
     """
     Данные задачи, возвращаемые API.
     """
+
     id: int
     team_id: int
     assignee_id: int
@@ -248,6 +262,7 @@ class CommentCreate(BaseModel):
     """
     Данные для создания комментария к задаче.
     """
+
     text: str = Field(
         description='Текст комментария.',
     )
@@ -257,6 +272,7 @@ class CommentResponse(BaseModel):
     """
     Данные комментария, возвращаемые API.
     """
+
     id: int
     task_id: int
     author_id: int
@@ -268,6 +284,7 @@ class EvaluationCreate(BaseModel):
     """
     Данные для оценки выполненной задачи.
     """
+
     score: int = Field(
         ge=1,
         le=5,
@@ -283,6 +300,7 @@ class EvaluationResponse(BaseModel):
     """
     Данные оценки задачи, возвращаемые API.
     """
+
     task_id: int
     user_id: int
     manager_id: int
@@ -290,6 +308,7 @@ class EvaluationResponse(BaseModel):
     comment: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class TaskDetailResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -310,6 +329,7 @@ class MeetCreate(BaseModel):
     """
     Данные для создания встречи команды.
     """
+
     name: str = Field(
         description='Название встречи.',
     )
@@ -336,6 +356,7 @@ class MeetResponse(BaseModel):
     """
     Данные встречи, возвращаемые API.
     """
+
     id: int
     team_id: int
     organizer_id: int
@@ -344,5 +365,16 @@ class MeetResponse(BaseModel):
     starts_at: datetime
     ends_at: datetime
     users: list[UserSmallResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CalendarResponse(BaseModel):
+    """
+    Данные по встречам и задачам
+    """
+
+    tasks: list[TaskResponse]
+    meetings: list[MeetResponse]
 
     model_config = ConfigDict(from_attributes=True)

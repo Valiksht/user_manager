@@ -3,24 +3,18 @@ from datetime import datetime
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
 )
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.dependencies.role import get_curret_manager_by_team
 from app.dependencies.team import get_team_obj
 from app.models import (
-    Meeting,
-    Role,
     Team,
-    TeamUser,
     User,
-    UserMeeting,
 )
 from app.schemas import (
+    CalendarResponse,
     MeetCreate,
     MeetResponse,
 )
@@ -29,8 +23,7 @@ from app.services.auth import (
 )
 from app.services.meetings import (
     create_new_meet,
-    meet_list_team,
-    meet_list_user,
+    meet_and_task_list,
 )
 
 router = APIRouter(prefix='/calendar', tags=['Meeteng'])
@@ -38,7 +31,7 @@ router = APIRouter(prefix='/calendar', tags=['Meeteng'])
 
 @router.get(
     '',
-    response_model=list[MeetResponse],
+    response_model=CalendarResponse,
     summary='Получить календарь пользователя.',
 )
 async def meet(
@@ -55,12 +48,12 @@ async def meet(
 
     В ответе возвращается информация о встречах и их участниках.
     """
-    return await meet_list_team(starts_at, ends_at, user.id, db)
+    return await meet_and_task_list(starts_at, ends_at, user.id, db)
 
 
 @router.get(
     '/me',
-    response_model=list[MeetResponse],
+    response_model=CalendarResponse,
     summary='Получить свои встречи.',
 )
 async def me_meet(
@@ -75,7 +68,7 @@ async def me_meet(
     В ответе возвращаются встречи, в которые текущий пользователь
     был добавлен как участник.
     """
-    return await meet_list_user(starts_at, ends_at, user.id, db)
+    return await meet_and_task_list(starts_at, ends_at, user.id, db)
 
 
 @router.post(
@@ -91,13 +84,13 @@ async def create_meet(
 ):
     """
     Создать новую встречу для указанной команды.
-    
+
     Создавать встречи может только менеджер команды.
-    
+
     Время окончания должно быть позже времени начала,
     а время начала не может быть в прошлом.
     Встреча не может пересекаться по времени с другой встречей этой команды.
-    
+
     Можно указать конкретных участников встречи.
     Если список участников не указан, в встречу добавляются все участники команды.
     """

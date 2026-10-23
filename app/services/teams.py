@@ -4,6 +4,9 @@ from fastapi import (
 )
 
 from app.crud.teams import (
+    get_all_role_name,
+    get_role,
+    get_team_by_id,
     get_team_by_name,
     get_team_members,
     get_team_with_user,
@@ -27,9 +30,32 @@ from app.services.hendlers import (
 )
 
 
-async def create_new_team(
-    team_data, user_creater, manager_role, db    
-):
+def transform_team_user_respose(team_members):
+    roles = {}
+    for member in team_members:
+        role_name = member.role.name
+        role_description = member.role.description
+
+        if role_name not in roles:
+            roles[role_name] = {
+                'description': role_description,
+                'users': [],
+            }
+
+        roles[role_name]['users'].append(
+            UserResponse.model_validate(member.user)
+        )
+    return [
+        RoleInTeamResponse(
+            name=role_name,
+            description=data['description'],
+            members=data['users'],
+        )
+        for role_name, data in roles.items()
+    ]
+
+
+async def create_new_team(team_data, user_creater, manager_role, db):
     exist_team = await get_team_by_name(team_data.name, db)
     if exist_team:
         raise HTTPException(
@@ -53,7 +79,57 @@ async def create_new_team(
     await db.refresh(team)
     return team
 
-async def join_to_team_with_invite_code(user_data, team, user, role, db):
+
+async def update_team(team_id, team_data, db):
+    team = await get_team_by_id(team_id, db)
+    if team_data.name is not None:
+        exist_team = await get_team_by_name(team_data.name, db)
+        if exist_team:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Команда с таким названием уже существует',
+            )
+        team.name = team_data.name
+    if team_data.description is not None:
+        team.description = team_data.description
+    if team_data.invite_code is not None:
+        team.invite_code = team_data.invite_code
+    await db.commit()
+    await db.refresh(team)
+    return team
+
+
+async def update_role_in_team(role_data, team_id, user, db):
+    team_user = await user_in_team(team_id, user.id, db)
+    if team_user is None:
+        raise NotFoundItemExeption(
+            f'Пользователь {user.username} не состоит в команде'
+        )
+    new_role = await get_role(role_data.role_name, db)
+    if new_role is None:
+        roles = await get_all_role_name(db)
+        raise NotFoundItemExeption(
+            f'Роль с именем {role_data.role_name} Не найдена.'
+            f'Список доступных ролей: {roles.all()}.'
+        )
+    if new_role.id == team_user.role_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='Данная роль уже присвоенная пользователю',
+        )
+    team_user.role_id = new_role.id
+    await db.commit()
+    await db.refresh(team_user)
+    return RoleInTeamResponse(
+        name=new_role.name,
+        description=new_role.description,
+        members=[user],
+    )
+
+
+async def join_to_team_with_invite_code(
+    user_data, team, user, role, db
+):
     invite_code_is_valid = verify_password(
         user_data.invite_code, team.invite_code
     )
@@ -83,33 +159,11 @@ async def join_to_team_with_invite_code(user_data, team, user, role, db):
         role=role.name,
     )
 
+
 async def teams_with_user(user_id, db):
     teams = await get_team_with_user(user_id, db)
     return teams.all()
 
-def transform_team_user_respose(team_members):
-    roles = {}
-    for member in team_members: #TODO Немного переделать
-        role_name = member.role.name
-        role_description = member.role.description
-
-        if role_name not in roles:
-            roles[role_name] = {
-                'description': role_description,
-                'users': [],
-            }
-
-        roles[role_name]['users'].append(
-            UserResponse.model_validate(member.user)
-        )
-    return [
-            RoleInTeamResponse(
-                name=role_name,
-                description=data['description'],
-                members=data['users'],
-            )
-            for role_name, data in roles.items()
-        ]
 
 async def team_detail(team, user_id, db):
     team_members = await get_team_members(team.id, db)
@@ -127,6 +181,7 @@ async def team_detail(team, user_id, db):
         members=team_in_role,
     )
 
+
 async def team_detail_members(team, user_id, db):
     team_members = await get_team_members(team.id, db)
     members = team_members.all()
@@ -137,6 +192,7 @@ async def team_detail_members(team, user_id, db):
         )
     team_in_role = transform_team_user_respose(members)
     return team_in_role
+
 
 async def remove_member(team_id, user_id, current_user, db):
     exist_user = await user_in_team(team_id, current_user.id, db)
@@ -164,5 +220,3 @@ async def remove_member(team_id, user_id, current_user, db):
     await db.commit()
     # messege = f'Пользователь {user_id} удален из конмады'
     # return {'messege': messege}
-
-

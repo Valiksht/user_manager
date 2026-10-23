@@ -1,15 +1,10 @@
 from datetime import date
 
 from fastapi import (
-    APIRouter,
-    Depends,
     HTTPException,
     status,
 )
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.crud.tasks import (
     get_comment_from_task_id,
@@ -22,41 +17,14 @@ from app.crud.tasks import (
     get_user_evaluation_list as evaluation_list,
 )
 from app.crud.teams import (
-    get_team_by_name,
-    get_team_members,
-    get_team_with_user,
     user_in_team,
 )
-from app.database import get_db
 from app.dependencies.role import get_manager_role
 from app.models import (
     Comment,
     Evaluation,
-    Role,
     Task,
     TaskStatus,
-    Team,
-    TeamUser,
-    User,
-)
-from app.schemas import (
-    RoleInTeamResponse,
-    TaskCreate,
-    TaskResponse,
-    TaskUpdate,
-    TeamCreate,
-    TeamJoin,
-    TeamJoinResponse,
-    TeamResponseDetail,
-    TeamResponseList,
-    UserResponse,
-)
-from app.services.auth import (
-    get_current_admin,
-    get_current_user,
-    get_id_from_token,
-    hash_password,
-    verify_password,
 )
 from app.services.hendlers import (
     NotFoundItemExeption,
@@ -115,9 +83,7 @@ async def update_task(task_data, team_id, user_id, task, db):
             'Вы не можете изменить эту задачу'
         )
     update_data = task_data.model_dump(exclude_unset=True)
-    if not perission and not set(update_data).issubset(
-        {'status'}
-    ):
+    if not perission and not set(update_data).issubset({'status'}):
         raise PermissionDeniedExeption(
             'Вы можете изменить только статус задачи'
         )
@@ -140,15 +106,17 @@ async def update_task(task_data, team_id, user_id, task, db):
             detail='Дата выполнения не может быть раньше текущей',
         )
 
-
     for field, value in update_data.items():
         setattr(task, field, value)
     await db.commit()
     await db.refresh(task)
     return task
 
+
 async def task_detail(task_id, user_id, db):
-    depends_user = await get_task_id_with_user_in_team(task_id, user_id, db)
+    depends_user = await get_task_id_with_user_in_team(
+        task_id, user_id, db
+    )
     if not depends_user:
         raise PermissionDeniedExeption(
             'Вы не можете просматривать информацию о этой задаче'
@@ -156,9 +124,11 @@ async def task_detail(task_id, user_id, db):
     task = await get_task_with_details(task_id, db)
     return task
 
+
 async def task_for_user(user_id, db):
     task = await get_task_list_user(user_id, db)
     return task
+
 
 async def create_task_comment(comment_data, task_id, user_id, db):
     comment = Comment(
@@ -171,9 +141,11 @@ async def create_task_comment(comment_data, task_id, user_id, db):
     await db.refresh(comment)
     return comment
 
+
 async def get_task_comment_list(task_id, db):
     comments = await get_comment_from_task_id(task_id, db)
     return comments
+
 
 async def create_task_evaluation(evaluation_data, task, user, db):
     if task.status != TaskStatus.DONE:
@@ -200,9 +172,11 @@ async def create_task_evaluation(evaluation_data, task, user, db):
     await db.refresh(evaluation)
     return evaluation
 
+
 async def get_task_evaluation(task_id, db):
     evaluation = await get_evaluation(task_id, db)
     return evaluation
+
 
 async def get_user_evaluation_list(user_id, db):
     evaluations = await evaluation_list(user_id, db)

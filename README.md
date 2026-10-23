@@ -78,6 +78,10 @@ Team_app.postman_collection.json
 
 ## Запуск тестов
 
+### Создание тестовой базы в postgresql
+
+docker exec -it user_manager_postgres psql -U postgres -d postgres -c "CREATE DATABASE team_manager_test;"
+
 ### Запуск тестов в однопоточном режине
 
 pytest 
@@ -86,9 +90,7 @@ python -m pytest
 
 ### Запуск тестов в многопоточном режимне
 
-pytest -n auto
-или
-pytest -n 4
+Не реализован
 
 ### Переименовать ветку
 git branch -M main

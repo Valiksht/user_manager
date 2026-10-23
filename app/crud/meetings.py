@@ -21,8 +21,9 @@ async def get_meet_list_team(starts_at, ends_at, user_id, db):
         query = query.where(Meeting.starts_at >= starts_at)
     if ends_at:
         query = query.where(Meeting.ends_at <= ends_at)
-    meetings = await db.scalars(query)   
+    meetings = await db.scalars(query)
     return meetings
+
 
 async def get_meet_list_user(starts_at, ends_at, user_id, db):
     query = (
@@ -42,8 +43,9 @@ async def get_meet_list_user(starts_at, ends_at, user_id, db):
         query = query.where(Meeting.starts_at >= starts_at)
     if ends_at:
         query = query.where(Meeting.ends_at <= ends_at)
-    meetings = await db.scalars(query)   
+    meetings = await db.scalars(query)
     return meetings
+
 
 async def exist_meeting_team(team_id, meet_data, db):
     meet = await db.scalar(
@@ -55,9 +57,8 @@ async def exist_meeting_team(team_id, meet_data, db):
     )
     return meet
 
-async def exist_meeting_user(
-        members_meet_id, meet_data, db
-    ):
+
+async def exist_meeting_user(members_meet_id, meet_data, db):
     meet = await db.scalar(
         select(Meeting.id)
         .join(

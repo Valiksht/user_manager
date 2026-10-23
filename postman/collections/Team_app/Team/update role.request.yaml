@@ -1,0 +1,36 @@
+$kind: http-request
+url: http://127.0.0.1:8000/teams/{{team_id}}/members/{{user_id}}
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"role_name\": \"manager\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{Super_token}}"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Сохранить team_id в переменную\", function () {\r
+
+      \r
+
+      \    var jsonData = pm.response.json();\r
+
+      \r
+
+      \    pm.collectionVariables.set(\"team_id\", jsonData.id);\r
+
+      \r
+
+      \    console.log(\"team_id сохранен: \" + pm.collectionVariables.get(\"team_id\"));\r
+
+      \r
+
+      });"
+    language: text/javascript
+settings: {}
+order: 10447

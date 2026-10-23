@@ -21,9 +21,6 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        if self.DEBUG:
-            return 'sqlite+aiosqlite:///./team_manager.db'
-
         return (
             f'postgresql+asyncpg://'
             f'{self.POSTGRES_USER}:'

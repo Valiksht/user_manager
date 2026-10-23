@@ -205,11 +205,12 @@ async def test_get_calendar(
     assert response.status_code == 200
     response_data = response.json()
 
-    assert len(response_data) == 1
-    assert response_data[0]['id'] == create_user_meeting.id
+    assert len(response_data['meetings']) == 1
+    assert response_data['meetings'][0]['id'] == create_user_meeting.id
     assert (
-        response_data[0]['name'] == create_user_meeting.name
+        response_data['meetings'][0]['name'] == create_user_meeting.name
     )
+    assert response_data['tasks'] == []
 
 
 async def test_get_calendar_starts_at_filter(
@@ -230,7 +231,10 @@ async def test_get_calendar_starts_at_filter(
     )
 
     assert response.status_code == 200
-    assert response.json() == []
+    assert response.json() == {
+        'tasks': [],
+        'meetings': [],
+    }
 
 
 async def test_get_my_meetings(
@@ -248,8 +252,9 @@ async def test_get_my_meetings(
     )
     assert response.status_code == 200
     response_data = response.json()
-    assert len(response_data) == 1
-    assert response_data[0]['id'] == create_user_meeting.id
+    assert len(response_data['meetings']) == 1
+    assert response_data['meetings'][0]['id'] == create_user_meeting.id
+    assert response_data['tasks'] == []
 
 async def test_create_meet_with_users_in_one_time(
     create_user_meeting,

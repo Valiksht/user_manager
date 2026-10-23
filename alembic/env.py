@@ -16,17 +16,15 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-if settings.DEBUG:
-    alembic_database_url = 'sqlite:///./team_manager.db'
-else:
-    alembic_database_url = (
-        f'postgresql+psycopg://'
-        f'{settings.POSTGRES_USER}:'
-        f'{settings.POSTGRES_PASSWORD}@'
-        f'{settings.POSTGRES_HOST}:'
-        f'{settings.POSTGRES_PORT}/'
-        f'{settings.POSTGRES_DB}'
-    )
+
+alembic_database_url = (
+    f'postgresql+psycopg://'
+    f'{settings.POSTGRES_USER}:'
+    f'{settings.POSTGRES_PASSWORD}@'
+    f'{settings.POSTGRES_HOST}:'
+    f'{settings.POSTGRES_PORT}/'
+    f'{settings.POSTGRES_DB}'
+)
 
 config.set_main_option(
     'sqlalchemy.url',

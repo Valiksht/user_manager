@@ -31,12 +31,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(
         String(30), unique=True, nullable=False
     )
-    first_name: Mapped[str] = mapped_column(
-        String(50), nullable=False
-    )
-    last_name: Mapped[str] = mapped_column(
-        String(50), nullable=False
-    )
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     password_hash: Mapped[str] = mapped_column(
         String(255), nullable=False
     )
@@ -51,8 +47,8 @@ class User(Base):
     )
     age: Mapped[int | None] = mapped_column(nullable=True)
 
-    team_memberships: Mapped[list['TeamUser']] = (
-        relationship(back_populates='user')
+    team_memberships: Mapped[list['TeamUser']] = relationship(
+        back_populates='user'
     )
     assigned_tasks: Mapped[list['Task']] = relationship(
         back_populates='assignee',
@@ -61,11 +57,9 @@ class User(Base):
     meetings: Mapped[list['UserMeeting']] = relationship(
         back_populates='user'
     )
-    organized_meetings: Mapped[list['Meeting']] = (
-        relationship(
-            back_populates='organizer',
-            foreign_keys='Meeting.organizer_id',
-        )
+    organized_meetings: Mapped[list['Meeting']] = relationship(
+        back_populates='organizer',
+        foreign_keys='Meeting.organizer_id',
     )
     comments: Mapped[list['Comment']] = relationship(
         back_populates='author'
@@ -74,11 +68,9 @@ class User(Base):
         back_populates='user',
         foreign_keys='Evaluation.user_id',
     )
-    given_evaluations: Mapped[list['Evaluation']] = (
-        relationship(
-            back_populates='manager',
-            foreign_keys='Evaluation.manager_id',
-        )
+    given_evaluations: Mapped[list['Evaluation']] = relationship(
+        back_populates='manager',
+        foreign_keys='Evaluation.manager_id',
     )
 
 
@@ -89,9 +81,7 @@ class Team(Base):
     name: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False
     )
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     invite_code: Mapped[str] = mapped_column(
         String(255), nullable=False
     )
@@ -99,9 +89,7 @@ class Team(Base):
     members: Mapped[list['TeamUser']] = relationship(
         back_populates='team'
     )
-    tasks: Mapped[list['Task']] = relationship(
-        back_populates='team'
-    )
+    tasks: Mapped[list['Task']] = relationship(back_populates='team')
     meetings: Mapped[list['Meeting']] = relationship(
         back_populates='team'
     )
@@ -114,9 +102,7 @@ class Role(Base):
     name: Mapped[str] = mapped_column(
         String(30), unique=True, nullable=False
     )
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     members: Mapped[list['TeamUser']] = relationship(
         back_populates='role'
@@ -126,9 +112,7 @@ class Role(Base):
 class TeamUser(Base):
     __tablename__ = 'team_users'
     __table_args__ = (
-        UniqueConstraint(
-            'user_id', 'team_id', name='uq_tema_user'
-        ),
+        UniqueConstraint('user_id', 'team_id', name='uq_tema_user'),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -145,12 +129,8 @@ class TeamUser(Base):
     user: Mapped['User'] = relationship(
         back_populates='team_memberships'
     )
-    team: Mapped['Team'] = relationship(
-        back_populates='members'
-    )
-    role: Mapped['Role'] = relationship(
-        back_populates='members'
-    )
+    team: Mapped['Team'] = relationship(back_populates='members')
+    role: Mapped['Role'] = relationship(back_populates='members')
 
 
 class TaskStatus(str, Enum):
@@ -169,22 +149,14 @@ class Task(Base):
     assignee_id: Mapped[int | None] = mapped_column(
         ForeignKey('users.id'), nullable=True
     )
-    title: Mapped[str] = mapped_column(
-        String(200), nullable=False
-    )
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True
-    )
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(
         default=TaskStatus.OPEN, nullable=False
     )
-    due_date: Mapped[date | None] = mapped_column(
-        Date, nullable=True
-    )
+    due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    team: Mapped['Team'] = relationship(
-        back_populates='tasks'
-    )
+    team: Mapped['Team'] = relationship(back_populates='tasks')
     assignee: Mapped['User | None'] = relationship(
         back_populates='assigned_tasks',
         foreign_keys=[assignee_id],
@@ -210,18 +182,12 @@ class Comment(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=lambda: datetime.now().replace(
-            microsecond=0
-        ),
+        default=lambda: datetime.now().replace(microsecond=0),
         nullable=False,
     )
 
-    task: Mapped['Task'] = relationship(
-        back_populates='comments'
-    )
-    author: Mapped['User'] = relationship(
-        back_populates='comments'
-    )
+    task: Mapped['Task'] = relationship(back_populates='comments')
+    author: Mapped['User'] = relationship(back_populates='comments')
 
 
 class Meeting(Base):
@@ -234,29 +200,21 @@ class Meeting(Base):
     organizer_id: Mapped[int] = mapped_column(
         ForeignKey('users.id'), nullable=False
     )
-    name: Mapped[str] = mapped_column(
-        String(200), nullable=False
-    )
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True
-    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     starts_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False
     )
 
-    ends_at: Mapped[datetime] = mapped_column(
-        DateTime, nullable=False
-    )
+    ends_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
-    team: Mapped['Team'] = relationship(
-        back_populates='meetings'
-    )
+    team: Mapped['Team'] = relationship(back_populates='meetings')
     organizer: Mapped['User'] = relationship(
         back_populates='organized_meetings',
         foreign_keys=[organizer_id],
     )
-    participants: Mapped[list['UserMeeting']] = (
-        relationship(back_populates='meeting')
+    participants: Mapped[list['UserMeeting']] = relationship(
+        back_populates='meeting'
     )
 
 
@@ -276,9 +234,7 @@ class UserMeeting(Base):
         ForeignKey('meetings.id'), nullable=False
     )
 
-    user: Mapped['User'] = relationship(
-        back_populates='meetings'
-    )
+    user: Mapped['User'] = relationship(back_populates='meetings')
     meeting: Mapped['Meeting'] = relationship(
         back_populates='participants'
     )
@@ -298,20 +254,14 @@ class Evaluation(Base):
         ForeignKey('users.id'), nullable=False
     )
     score: Mapped[int] = mapped_column(nullable=False)
-    comment: Mapped[str | None] = mapped_column(
-        Text, nullable=True
-    )
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=lambda: datetime.now().replace(
-            microsecond=0
-        ),
+        default=lambda: datetime.now().replace(microsecond=0),
         nullable=False,
     )
 
-    task: Mapped['Task'] = relationship(
-        back_populates='evaluation'
-    )
+    task: Mapped['Task'] = relationship(back_populates='evaluation')
     user: Mapped['User'] = relationship(
         back_populates='evaluations', foreign_keys=[user_id]
     )

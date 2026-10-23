@@ -5,4 +5,4 @@ auth:
   type: bearer
   credentials:
     token: "{{Super_token}}"
-order: 10000
+order: 12000

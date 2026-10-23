@@ -30,8 +30,7 @@ async def create_superuser():
         password = input('Password: ')
         existing_user = await db.scalar(
             select(User).where(
-                (User.email == email)
-                | (User.username == username)
+                (User.email == email) | (User.username == username)
             )
         )
 

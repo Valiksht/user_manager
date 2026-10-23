@@ -14,22 +14,23 @@ MEMBER = 'member'
 
 
 async def get_manager_role(
-    db: AsyncSession = Depends(get_db),   
+    db: AsyncSession = Depends(get_db),
 ) -> Role:
     role_name = MANAGER
     return await get_role(role_name, db)
 
 
 async def get_member_role(
-    db: AsyncSession = Depends(get_db),   
+    db: AsyncSession = Depends(get_db),
 ) -> Role:
     role_name = MEMBER
     return await get_role(role_name, db)
 
+
 async def get_curret_manager_by_task(
-        task: Task = Depends(get_task_obj_with_user_odj),
-        user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    task: Task = Depends(get_task_obj_with_user_odj),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     manager = await db.scalar(
         select(TeamUser.id)
@@ -37,7 +38,7 @@ async def get_curret_manager_by_task(
         .where(
             TeamUser.team_id == task.team_id,
             TeamUser.user_id == user.id,
-            Role.name == MANAGER
+            Role.name == MANAGER,
         )
     )
     if manager is None:
@@ -46,10 +47,11 @@ async def get_curret_manager_by_task(
         )
     return user
 
+
 async def get_curret_manager_by_team(
-        team_id: int,
-        user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    team_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     manager = await db.scalar(
         select(TeamUser.id)
@@ -57,7 +59,7 @@ async def get_curret_manager_by_team(
         .where(
             TeamUser.team_id == team_id,
             TeamUser.user_id == user.id,
-            Role.name == MANAGER
+            Role.name == MANAGER,
         )
     )
     if manager is None:
