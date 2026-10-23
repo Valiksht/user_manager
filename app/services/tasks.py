@@ -26,28 +26,28 @@ from app.models import (
     Task,
     TaskStatus,
 )
-from app.services.hendlers import (
-    NotFoundItemExeption,
-    PermissionDeniedExeption,
+from app.services.handlers import (
+    NotFoundItemException,
+    PermissionDeniedException,
 )
 
 
 async def create_new_tast(task_data, team_id, user_id, db):
     exist_user = await user_in_team(team_id, user_id, db)
     if not exist_user:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Вы не состоите в данной команде'
         )
     manager_role = await get_manager_role(db)
     if exist_user.role_id != manager_role.id:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Вы не можете создавать задачи для этой команды'
         )
     current_team = await user_in_team(
         team_id, task_data.assignee_id, db
     )
     if not current_team:
-        raise NotFoundItemExeption(
+        raise NotFoundItemException(
             'Назначаемый пользователь не состоит в этой команде'
         )
     if task_data.due_date < date.today():
@@ -71,7 +71,7 @@ async def create_new_tast(task_data, team_id, user_id, db):
 async def update_task(task_data, team_id, user_id, task, db):
     exist_user = await user_in_team(team_id, user_id, db)
     if not exist_user:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Вы не состоите в данной команде'
         )
     manager_role = await get_manager_role(db)
@@ -79,12 +79,12 @@ async def update_task(task_data, team_id, user_id, task, db):
     update_data = task_data.model_dump(exclude_unset=True)
 
     if not perission and task.assignee_id != user_id:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Вы не можете изменить эту задачу'
         )
     update_data = task_data.model_dump(exclude_unset=True)
     if not perission and not set(update_data).issubset({'status'}):
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Вы можете изменить только статус задачи'
         )
 
@@ -93,7 +93,7 @@ async def update_task(task_data, team_id, user_id, task, db):
             team_id, task_data.assignee_id, db
         )
         if not current_team:
-            raise NotFoundItemExeption(
+            raise NotFoundItemException(
                 'Назначаемый пользователь не состоит в этой команде'
             )
     if (
@@ -118,8 +118,8 @@ async def task_detail(task_id, user_id, db):
         task_id, user_id, db
     )
     if not depends_user:
-        raise PermissionDeniedExeption(
-            'Вы не можете просматривать информацию о этой задаче'
+        raise PermissionDeniedException(
+            'Вы не можете просматривать информацию об этой задаче'
         )
     task = await get_task_with_details(task_id, db)
     return task
@@ -151,7 +151,7 @@ async def create_task_evaluation(evaluation_data, task, user, db):
     if task.status != TaskStatus.DONE:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail='Нельзя оцениварь невыполненые задчи',
+            detail='Нельзя оценивать невыполненные задачи',
         )
     evaluation = Evaluation(
         task_id=task.id,

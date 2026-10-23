@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models import Team
-from app.services.hendlers import NotFoundItemExeption
+from app.services.handlers import NotFoundItemException
 
 
 async def get_team_obj(
@@ -17,5 +17,5 @@ async def get_team_obj(
         )
     )
     if not team:
-        raise NotFoundItemExeption('Команды не существует')
+        raise NotFoundItemException('Команды не существует')
     return team

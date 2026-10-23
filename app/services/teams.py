@@ -24,9 +24,9 @@ from app.services.auth import (
     hash_password,
     verify_password,
 )
-from app.services.hendlers import (
-    NotFoundItemExeption,
-    PermissionDeniedExeption,
+from app.services.handlers import (
+    NotFoundItemException,
+    PermissionDeniedException,
 )
 
 
@@ -102,20 +102,20 @@ async def update_team(team_id, team_data, db):
 async def update_role_in_team(role_data, team_id, user, db):
     team_user = await user_in_team(team_id, user.id, db)
     if team_user is None:
-        raise NotFoundItemExeption(
+        raise NotFoundItemException(
             f'Пользователь {user.username} не состоит в команде'
         )
     new_role = await get_role(role_data.role_name, db)
     if new_role is None:
         roles = await get_all_role_name(db)
-        raise NotFoundItemExeption(
-            f'Роль с именем {role_data.role_name} Не найдена.'
+        raise NotFoundItemException(
+            f'Роль с именем {role_data.role_name} не найдена.'
             f'Список доступных ролей: {roles.all()}.'
         )
     if new_role.id == team_user.role_id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail='Данная роль уже присвоенная пользователю',
+            detail='Данная роль уже присвоена пользователю',
         )
     team_user.role_id = new_role.id
     await db.commit()
@@ -171,7 +171,7 @@ async def team_detail(team, user_id, db):
     if not any(member.user_id == user_id for member in members):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Вас нес среди участников команды',
+            detail='Вас нет среди участников команды',
         )
     team_in_role = transform_team_user_respose(members)
     return TeamResponseDetail(
@@ -188,7 +188,7 @@ async def team_detail_members(team, user_id, db):
     if not any(member.user_id == user_id for member in members):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Вас нес среди участников команды',
+            detail='Вас нет среди участников команды',
         )
     team_in_role = transform_team_user_respose(members)
     return team_in_role
@@ -197,18 +197,18 @@ async def team_detail_members(team, user_id, db):
 async def remove_member(team_id, user_id, current_user, db):
     exist_user = await user_in_team(team_id, current_user.id, db)
     if not exist_user:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Вы не состоите в данной команде'
         )
     manager_role = await get_manager_role(db)
     if exist_user.role_id != manager_role.id:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Только менеджер может удалять участников'
         )
 
     member_in_team = await user_in_team(team_id, user_id, db)
     if not member_in_team:
-        raise NotFoundItemExeption(
+        raise NotFoundItemException(
             'Пользователь не состоит в этой команде'
         )
     if user_id == current_user.id:
@@ -218,5 +218,3 @@ async def remove_member(team_id, user_id, current_user, db):
         )
     await db.delete(member_in_team)
     await db.commit()
-    # messege = f'Пользователь {user_id} удален из конмады'
-    # return {'messege': messege}

@@ -1,14 +1,13 @@
 $kind: http-request
-url: http://127.0.0.1:8000/teams
-method: POST
+url: http://127.0.0.1:8000/teams/{{team_id}}
+method: PATCH
 body:
   type: json
   content: "{\r
 
-    \    \"name\": \"Первая команда\",\r
+    \    \"name\": \"17Первая команда\",\r
 
-    \    \"description\": \"Первая тестовая команда которая создается для
-    спасения человечества\",\r
+    \    \"description\": \"Первая тестовая команда которая создается для спасения человечества\",\r
 
     \    \"invite_code\": \"password\"\r
 
@@ -31,8 +30,7 @@ scripts:
 
       \r
 
-      \    console.log(\"team_id сохранен: \" +
-      pm.collectionVariables.get(\"team_id\"));\r
+      \    console.log(\"team_id сохранен: \" + pm.collectionVariables.get(\"team_id\"));\r
 
       \r
 

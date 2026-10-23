@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.models import Comment, Evaluation, Task, TeamUser
-from app.services.hendlers import NotFoundItemExeption
+from app.services.handlers import NotFoundItemException
 
 
 async def get_task_with_team_id(task_id, team_id, db):
@@ -12,7 +12,7 @@ async def get_task_with_team_id(task_id, team_id, db):
         select(Task).where(Task.id == task_id, Task.team_id == team_id)
     )
     if not task:
-        raise NotFoundItemExeption('Задача не найдена')
+        raise NotFoundItemException('Задача не найдена')
     return task
 
 

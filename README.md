@@ -96,3 +96,14 @@ python -m pytest
 git branch -M main
 git push -u origin main --force
 
+# Запуск докер-композ.продакшен
+
+## Запуск контейнеров
+docker compose -f docker-compose.prodaction.yml up --build -d
+
+## Создание суперпользователя
+docker compose -f docker-compose.prodaction.yml exec app python -m app.services.create_superuser
+
+## Остановить это безумие
+docker compose -f docker-compose.prodaction.yml down
+

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.models import Role, Team, TeamUser, User
-from app.services.hendlers import NotFoundItemExeption
+from app.services.handlers import NotFoundItemException
 
 
 async def get_role(role_name, db):
@@ -34,7 +34,7 @@ async def get_team_by_id(team_id, db) -> Team:
         )
     team = await db.scalar(select(Team).where(Team.id == team_id))
     if team is None:
-        raise NotFoundItemExeption(f'Команда с id {team_id} не найдена')
+        raise NotFoundItemException(f'Команда с id {team_id} не найдена')
     return team
 
 

@@ -4,10 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.teams import get_role
 from app.database import get_db
-from app.dependencies.task import get_task_obj_with_user_odj
+from app.dependencies.task import get_task_obj_with_user_obj
 from app.models import Role, Task, TeamUser, User
 from app.services.auth import get_current_user
-from app.services.hendlers import PermissionDeniedExeption
+from app.services.handlers import PermissionDeniedException
 
 MANAGER = 'manager'
 MEMBER = 'member'
@@ -27,8 +27,8 @@ async def get_member_role(
     return await get_role(role_name, db)
 
 
-async def get_curret_manager_by_task(
-    task: Task = Depends(get_task_obj_with_user_odj),
+async def get_current_manager_by_task(
+    task: Task = Depends(get_task_obj_with_user_obj),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -42,13 +42,13 @@ async def get_curret_manager_by_task(
         )
     )
     if manager is None:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Действие доступно только менеджеру команды'
         )
     return user
 
 
-async def get_curret_manager_by_team(
+async def get_current_manager_by_team(
     team_id: int,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -63,7 +63,7 @@ async def get_curret_manager_by_team(
         )
     )
     if manager is None:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Действие доступно только менеджеру команды'
         )
     return user

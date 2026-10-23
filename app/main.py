@@ -14,9 +14,9 @@ from app.api.teams import router as team_router
 from app.api.users import auth_router, user_router
 from app.database import engine, get_db
 from app.services.create_role import create_role
-from app.services.hendlers import (
-    AppExeption,
-    app_exeprion_hendler,
+from app.services.handlers import (
+    AppException,
+    app_exception_handler,
 )
 
 
@@ -52,11 +52,16 @@ app.include_router(team_router)
 app.include_router(task_router)
 app.include_router(meet_router)
 
-app.add_exception_handler(AppExeption, app_exeprion_hendler)
+app.add_exception_handler(AppException, app_exception_handler)
 
 
 @app.get('/health')
 async def health(db: AsyncSession = Depends(get_db)):
+    """
+    Проверяет доступность приложения и соединения с базой данных.
+
+    Возвращает статус 'ok', если запрос к базе данных выполнен успешно.
+    """
     await db.execute(text('SELECT 1'))
     return {'status': 'ok'}
 
@@ -66,6 +71,11 @@ async def integrity_error_hendler(
     request: Request,
     exc: IntegrityError,
 ):
+    """
+    Обрабатывает ошибки нарушения целостности данных в базе данных.
+
+    Возвращает HTTP 409 Conflict, если операция нарушает ограничения БД.
+    """
     return JSONResponse(
         status_code=409,
         content={'detail': 'Объект с такими данными уже существует'},

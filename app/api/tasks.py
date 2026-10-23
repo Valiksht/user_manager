@@ -5,8 +5,8 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.dependencies.role import get_curret_manager_by_task
-from app.dependencies.task import get_task_obj_with_user_odj
+from app.dependencies.role import get_current_manager_by_task
+from app.dependencies.task import get_task_obj_with_user_obj
 from app.models import (
     Task,
     User,
@@ -66,7 +66,7 @@ async def get_task_detail(
 ):
     """
     Получить подробные данные о задаче,
-    включая коментарии и оценку.
+    включая комментарии и оценку.
     """
     return await task_detail(task_id, user_id, db)
 
@@ -78,7 +78,7 @@ async def get_task_detail(
 )
 async def task_comment(
     comment_data: CommentCreate,
-    task: Task = Depends(get_task_obj_with_user_odj),
+    task: Task = Depends(get_task_obj_with_user_obj),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -98,7 +98,7 @@ async def task_comment(
     summary='Получить комментарии задачи.',
 )
 async def get_comments(
-    task: Task = Depends(get_task_obj_with_user_odj),
+    task: Task = Depends(get_task_obj_with_user_obj),
     user_id: User = Depends(get_id_from_token),
     db: AsyncSession = Depends(get_db),
 ):
@@ -118,8 +118,8 @@ async def get_comments(
 )
 async def task_evaluation(
     evaluation_data: EvaluationCreate,
-    task: Task = Depends(get_task_obj_with_user_odj),
-    user: User = Depends(get_curret_manager_by_task),
+    task: Task = Depends(get_task_obj_with_user_obj),
+    user: User = Depends(get_current_manager_by_task),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -140,7 +140,7 @@ async def task_evaluation(
     summary='Получить оценку задачи.',
 )
 async def get_evaluation(
-    task: Task = Depends(get_task_obj_with_user_odj),
+    task: Task = Depends(get_task_obj_with_user_obj),
     user_id: int = Depends(get_id_from_token),
     db: AsyncSession = Depends(get_db),
 ):

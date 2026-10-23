@@ -1,6 +1,6 @@
 $kind: http-request
 url: http://127.0.0.1:8000/teams/{{team_id}}/members/{{user_id}}
-method: POST
+method: PATCH
 body:
   type: json
   content: "{\r

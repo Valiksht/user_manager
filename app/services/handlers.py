@@ -2,24 +2,24 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 
-class AppExeption(Exception):
+class AppException(Exception):
     status_code = 400
 
     def __init__(self, detail: str):
         self.detail = detail
 
 
-class NotFoundItemExeption(AppExeption):
+class NotFoundItemException(AppException):
     status_code = 404
 
 
-class PermissionDeniedExeption(AppExeption):
+class PermissionDeniedException(AppException):
     status_code = 403
 
 
-async def app_exeprion_hendler(
+async def app_exception_handler(
     request: Request,
-    exc: AppExeption,
+    exc: AppException,
 ):
     return JSONResponse(
         status_code=exc.status_code,

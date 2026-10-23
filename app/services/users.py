@@ -1,4 +1,4 @@
-from app.crud.users import get_user_deteil as user_deteil
+from app.crud.users import get_user_detail as user_deteil
 from app.crud.users import get_user_list as user_list
 from app.models import User
 from app.services.auth import (
@@ -26,7 +26,7 @@ def get_token(user):
     return create_jwt_token(user.id)
 
 
-async def get_user_deteil(user_id, db):
+async def get_user_detail(user_id, db):
     return await user_deteil(user_id, db)
 
 

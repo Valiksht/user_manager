@@ -17,7 +17,7 @@ from app.schemas import (
 from app.services.auth import (
     verify_password,
 )
-from app.services.users import get_user_deteil
+from app.services.users import get_user_detail
 
 
 async def check_user_unique(
@@ -28,12 +28,12 @@ async def check_user_unique(
     if user_exist:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Email или username уже занят',
+            detail='Email или username уже заняты',
         )
     return user_data
 
 
-async def ckeck_user_password(
+async def check_user_password(
     user_data: UserLogin,
     db: AsyncSession = Depends(get_db),
 ) -> User:
@@ -46,7 +46,7 @@ async def ckeck_user_password(
     if not user_exist.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Аккаунт отключен',
+            detail='Аккаунт отключён',
         )
     password_is_valid = verify_password(
         user_data.password, user_exist.password_hash
@@ -63,5 +63,5 @@ async def get_user_obj_by_id(
     user_id: int,
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    user_obj = await get_user_deteil(user_id, db)
+    user_obj = await get_user_detail(user_id, db)
     return user_obj

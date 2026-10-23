@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies.role import (
-    get_curret_manager_by_team,
+    get_current_manager_by_team,
     get_manager_role,
     get_member_role,
 )
@@ -69,7 +69,7 @@ async def team_create(
 
     Название команды должно быть уникальным.
 
-    Операция ограницена правом администратора, что бы ограничить
+    Операция ограничена правом администратора, что бы ограничить
     создание команд обычными пользователями.
     """
     team = await create_new_team(team_data, user, manager_role, db)
@@ -91,9 +91,9 @@ async def team_create(
     '/{team_id}',
     response_model=TeamResponseDetail,
     status_code=status.HTTP_201_CREATED,
-    summary='Создать команду.',
+    summary='Изменить информацию о команде.',
 )
-async def update_create(
+async def team_update(
     team_id: int,
     team_data: TeamUpdate,
     user: User = Depends(get_current_admin),
@@ -101,15 +101,11 @@ async def update_create(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Создать новую команду.
+    Обновить информацию об указанной команде.
 
     Операция доступна только пользователю с правами администратора.
-    Создатель команды автоматически добавляется в неё с ролью manager.
 
-    Название команды должно быть уникальным.
-
-    Операция ограницена правом администратора, что бы ограничить
-    создание команд обычными пользователями.
+    Данные команды обновляются в соответствии с переданными значениями.
     """
     team = await update_team(team_id, team_data, db)
     return TeamResponseDetail(
@@ -212,23 +208,20 @@ async def team_members(
 @router.patch(
     '/{team_id}/members/{user_id}',
     response_model=RoleInTeamResponse,
-    summary='Изменить задачу.',
+    summary='Изменить роль.',
 )
 async def update_role(
     role_data: TeamRoleUpdate,
     team_id: int,
     user: User = Depends(get_user_obj_by_id),
-    manager_user: User = Depends(get_curret_manager_by_team),
+    manager_user: User = Depends(get_current_manager_by_team),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Изменить существующую задачу команды.
+    Изменить роль участника команды.
 
-    Менеджер команды может изменять доступные поля задачи.
-    Исполнитель задачи может изменять только её статус.
-
-    Пользователь не может изменять задачи, которые не относятся к его команде
-    или к которым у него нет необходимых прав.
+    Менеджер команды может изменить роль указанного участника.
+    Пользователь, которому назначается роль, должен состоять в команде.
     """
     return await update_role_in_team(role_data, team_id, user, db)
 

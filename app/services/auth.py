@@ -10,9 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.models import User
-from app.services.hendlers import (
-    NotFoundItemExeption,
-    PermissionDeniedExeption,
+from app.services.handlers import (
+    NotFoundItemException,
+    PermissionDeniedException,
 )
 
 password_hash = PasswordHash.recommended()
@@ -26,11 +26,11 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 
-oauth2_sheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
 async def get_id_from_token(
-    token: str = Depends(oauth2_sheme),
+    token: str = Depends(oauth2_scheme),
 ):
     try:
         payload = jwt.decode(
@@ -75,8 +75,8 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db),
 ) -> User:
     user = await db.scalar(select(User).where(User.id == user_id))
-    if User is None:
-        raise NotFoundItemExeption(
+    if user is None:
+        raise NotFoundItemException(
             f'Пользователь с id {user_id} не найден'
         )
     if not user.is_active:
@@ -102,7 +102,7 @@ async def get_current_superuser(
     user: User = Depends(get_current_user),
 ) -> User:
     if not user.is_superuser:
-        raise PermissionDeniedExeption(
+        raise PermissionDeniedException(
             'Операция доступна только пользователю с правами superuser'
         )
     return user

@@ -19,8 +19,8 @@ from app.models import (
     UserMeeting,
 )
 from app.schemas import CalendarResponse
-from app.services.hendlers import (
-    NotFoundItemExeption,
+from app.services.handlers import (
+    NotFoundItemException,
 )
 
 
@@ -74,7 +74,7 @@ async def create_new_meet(meet_data, team_id, user_creator, db):
     if meet_data.users is not None:
         for member_id in meet_data.users:
             if member_id not in users_in_team_id:
-                raise NotFoundItemExeption(
+                raise NotFoundItemException(
                     f'Пользователь с id {member_id} не состоит в команде или не существует'
                 )
         members_meet_id = meet_data.users

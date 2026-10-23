@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.dependencies.users import (
     check_user_unique,
-    ckeck_user_password,
+    check_user_password,
     get_user_obj_by_id,
 )
 from app.models import User
@@ -24,7 +24,7 @@ from app.services.auth import (
 from app.services.users import (
     create_user,
     get_token,
-    get_user_deteil,
+    get_user_detail,
     get_user_list,
     update_user_from_admin,
 )
@@ -62,7 +62,7 @@ async def register(
     response_model=Token,
     summary='Авторизовать пользователя.',
 )
-async def login(user: User = Depends(ckeck_user_password)):
+async def login(user: User = Depends(check_user_password)):
     """
     Авторизовать пользователя и получить JWT-токен.
 
@@ -88,7 +88,7 @@ async def get_current_user(
     Пользователь определяется по идентификатору из JWT-токена.
     Отключённые пользователи не могут получить свои данные.
     """
-    return await get_user_deteil(user_id, db)
+    return await get_user_detail(user_id, db)
 
 
 @user_router.get(
@@ -126,7 +126,7 @@ async def make_admin(
     Операция доступна только пользователю с правами superuser.
     После выполнения операции у указанного пользователя устанавливается
     признак администратора (is_admin).
-    Пользователи с правами администрора считаются начальниками отделов.
+    Пользователи с правами администратора считаются начальниками отделов.
     У них есть возможность создавать команды.
     """
     return await update_user_from_admin(user, db)

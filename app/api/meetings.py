@@ -7,7 +7,7 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.dependencies.role import get_curret_manager_by_team
+from app.dependencies.role import get_current_manager_by_team
 from app.dependencies.team import get_team_obj
 from app.models import (
     Team,
@@ -79,7 +79,7 @@ async def me_meet(
 async def create_meet(
     meet_data: MeetCreate,
     team: Team = Depends(get_team_obj),
-    user: User = Depends(get_curret_manager_by_team),
+    user: User = Depends(get_current_manager_by_team),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -92,6 +92,6 @@ async def create_meet(
     Встреча не может пересекаться по времени с другой встречей этой команды.
 
     Можно указать конкретных участников встречи.
-    Если список участников не указан, в встречу добавляются все участники команды.
+    Если список участников не указан, во встречу добавляются все участники команды.
     """
     return await create_new_meet(meet_data, team.id, user, db)

@@ -35,7 +35,7 @@ async def create_superuser():
         )
 
         if existing_user:
-            print('email или username уже занят')
+            print('Email или username уже заняты')
             return
 
         user = User(

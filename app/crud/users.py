@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 
 from app.models import User
-from app.services.hendlers import NotFoundItemExeption
+from app.services.handlers import NotFoundItemException
 
 
 async def get_user_from_email_or_username(user_data, db):
@@ -21,7 +21,7 @@ async def get_user_from_email_or_username(user_data, db):
     return await db.scalar(query)
 
 
-async def get_user_deteil(user_id, db):
+async def get_user_detail(user_id, db):
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -31,7 +31,7 @@ async def get_user_deteil(user_id, db):
         select(User).where(User.id == user_id, User.is_active == True)
     )
     if user is None:
-        raise NotFoundItemExeption(
+        raise NotFoundItemException(
             f'Пользователь с id {user_id} не найден'
         )
     if not user.is_active:

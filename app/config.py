@@ -3,6 +3,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """
+    Настройки приложения, загружаемые из переменных окружения и файла .env.
+    """
     DEBUG: bool = True
     SECRET_KEY: str
     JWT_ALGORITHM: str = 'HS256'
