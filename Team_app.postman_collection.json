@@ -66,11 +66,19 @@
         },
         {
           "name": "/auth/login",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Сохранить access_token в переменную\", function () {\r\n    // Парсим JSON из тела ответа\r\n    var jsonData = pm.response.json();\r\n    \r\n    // Сохраняем значение access_token в глобальную переменную\r\n    pm.collectionVariables.set(\"access_token\", jsonData.access_token);\r\n    \r\n    // Опционально: можно сохранить и token_type\r\n    pm.collectionVariables.set(\"token_type\", jsonData.token_type);\r\n    \r\n    console.log(\"Токен сохранен: \" + pm.collectionVariables.get(\"access_token\"));\r\n});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
@@ -251,7 +259,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Первая команда\",\r\n    \"description\": \"Первая тестовая команда которая создается для спасения человечества\",\r\n    \"invite_code\": \"password\"\r\n}",
+              "raw": "{\r\n    \"name\": \"Еще4 одна команда команда\",\r\n    \"description\": \"Четвертая тестовая команда которая создается для спасения человечества\",\r\n    \"invite_code\": \"password\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -339,6 +347,22 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/teams/5/join",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "teams",
+                "5",
+                "join"
+              ]
             }
           },
           "response": []
@@ -356,7 +380,7 @@
                 }
               ]
             },
-            "method": "POST",
+            "method": "GET",
             "header": [],
             "url": {
               "raw": "http://127.0.0.1:8000/teams/5/members",
@@ -487,7 +511,23 @@
           "name": "tack_deteil",
           "request": {
             "method": "GET",
-            "header": []
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/tasks/1/",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "tasks",
+                "1",
+                ""
+              ]
+            }
           },
           "response": []
         },
@@ -516,7 +556,7 @@
               }
             },
             "url": {
-              "raw": "http://127.0.0.1:8000/tasks/2/comments",
+              "raw": "http://127.0.0.1:8000/tasks/1/comments",
               "protocol": "http",
               "host": [
                 "127",
@@ -527,7 +567,7 @@
               "port": "8000",
               "path": [
                 "tasks",
-                "2",
+                "1",
                 "comments"
               ]
             }
@@ -537,8 +577,34 @@
         {
           "name": "get_tack_comment",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
-            "header": []
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/tasks/1/comments",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "tasks",
+                "1",
+                "comments"
+              ]
+            }
           },
           "response": []
         },
@@ -567,7 +633,7 @@
               }
             },
             "url": {
-              "raw": "http://127.0.0.1:8000/tasks/1/evaluation",
+              "raw": "http://127.0.0.1:8000/tasks/2/evaluation",
               "protocol": "http",
               "host": [
                 "127",
@@ -578,7 +644,7 @@
               "port": "8000",
               "path": [
                 "tasks",
-                "1",
+                "2",
                 "evaluation"
               ]
             }
@@ -622,8 +688,34 @@
         {
           "name": "me evaluations",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
-            "header": []
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/tasks/evaluations/me",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "tasks",
+                "evaluations",
+                "me"
+              ]
+            }
           },
           "response": []
         }
