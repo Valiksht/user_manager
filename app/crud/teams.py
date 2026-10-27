@@ -22,7 +22,7 @@ async def get_role(role_name, db):
 
 
 async def get_all_role_name(db):
-    roles = db.scalars(select(Role.name))
+    roles = await db.scalars(select(Role.name))
     return roles
 
 

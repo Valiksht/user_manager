@@ -77,10 +77,21 @@ async def create_new_team(team_data, user_creater, manager_role, db):
     db.add(team_user)
     await db.commit()
     await db.refresh(team)
-    return team
+    return TeamResponseDetail(
+        id=team.id,
+        name=team.name,
+        description=team.description,
+        members=[
+            RoleInTeamResponse(
+                name=manager_role.name,
+                description=manager_role.description,
+                members=[UserResponse.model_validate(user_creater)],
+            )
+        ],
+    )
 
 
-async def update_team(team_id, team_data, db):
+async def update_team(team_id, team_data, manager_role, user, db):
     team = await get_team_by_id(team_id, db)
     if team_data.name is not None:
         exist_team = await get_team_by_name(team_data.name, db)
@@ -93,10 +104,18 @@ async def update_team(team_id, team_data, db):
     if team_data.description is not None:
         team.description = team_data.description
     if team_data.invite_code is not None:
-        team.invite_code = team_data.invite_code
+        team.invite_code = hash_password(team_data.invite_code)
     await db.commit()
     await db.refresh(team)
-    return team
+    team_members = await get_team_members(team.id, db)
+    members = team_members.all()
+    team_in_role = transform_team_user_respose(members)
+    return TeamResponseDetail(
+        id=team.id,
+        name=team.name,
+        description=team.description,
+        members=team_in_role,
+    )
 
 
 async def update_role_in_team(role_data, team_id, user, db):

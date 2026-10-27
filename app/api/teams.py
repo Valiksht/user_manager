@@ -73,18 +73,7 @@ async def team_create(
     создание команд обычными пользователями.
     """
     team = await create_new_team(team_data, user, manager_role, db)
-    return TeamResponseDetail(
-        id=team.id,
-        name=team.name,
-        description=team.description,
-        members=[
-            RoleInTeamResponse(
-                name=manager_role.name,
-                description=manager_role.description,
-                members=[UserResponse.model_validate(user)],
-            )
-        ],
-    )
+    return team
 
 
 @router.patch(
@@ -107,7 +96,7 @@ async def team_update(
 
     Данные команды обновляются в соответствии с переданными значениями.
     """
-    team = await update_team(team_id, team_data, db)
+    team = await update_team(team_id, team_data, manager_role, user, db)
     return TeamResponseDetail(
         id=team.id,
         name=team.name,
