@@ -1,8 +1,15 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+)
 
 from app.models import TaskStatus
+from app.utils import normalize_datetime
 
 
 class UserCreate(BaseModel):
@@ -350,6 +357,25 @@ class MeetCreate(BaseModel):
             'Если не указан, во встречу добавляются все участники команды.'
         ),
     )
+
+    @field_validator('starts_at', 'ends_at')
+    @classmethod
+    def normalize_date(cls, value: datetime | None):
+        if value is None:
+            return None
+        return normalize_datetime(value)
+
+
+class MeetingFilter(BaseModel):
+    starts_at: datetime | None = None
+    ends_at: datetime | None = None
+
+    @field_validator('starts_at', 'ends_at')
+    @classmethod
+    def normalize_date(cls, value: datetime | None):
+        if value is None:
+            return None
+        return normalize_datetime(value)
 
 
 class MeetResponse(BaseModel):

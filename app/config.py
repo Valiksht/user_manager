@@ -16,25 +16,24 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = 'team_manager'
     POSTGRES_USER: str = 'postgres'
     POSTGRES_PASSWORD: str
+    DEFAULT_TIMEZONE: str = 'Europe/Moscow'
 
     model_config = ConfigDict(
         env_file='.env',
         env_file_encoding='utf-8'
     )
+    
+
 
     @property
     def database_url(self) -> str:
-        return "sqlite+aiosqlite:///test.db"
-
-    # @property
-    # def database_url(self) -> str:
-    #     return (
-    #         f'postgresql+asyncpg://'
-    #         f'{self.POSTGRES_USER}:'
-    #         f'{self.POSTGRES_PASSWORD}@'
-    #         f'{self.POSTGRES_HOST}:'
-    #         f'{self.POSTGRES_PORT}/'
-    #         f'{self.POSTGRES_DB}'
-    #     )
+        return (
+            f'postgresql+asyncpg://'
+            f'{self.POSTGRES_USER}:'
+            f'{self.POSTGRES_PASSWORD}@'
+            f'{self.POSTGRES_HOST}:'
+            f'{self.POSTGRES_PORT}/'
+            f'{self.POSTGRES_DB}'
+        )
 
 settings = Settings()

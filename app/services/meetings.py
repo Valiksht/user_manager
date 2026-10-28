@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import (
     HTTPException,
@@ -63,7 +63,7 @@ async def create_new_meet(meet_data, team_id, user_creator, db):
             status_code=400,
             detail='Время окончания должно быть позже времени начала',
         )
-    if meet_data.starts_at <= datetime.now():
+    if meet_data.starts_at <= datetime.now(timezone.utc):
         raise HTTPException(
             status_code=400,
             detail='Время начала должно быть позже текущего времени',

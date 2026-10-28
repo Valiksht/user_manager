@@ -181,7 +181,7 @@ class Comment(Base):
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now().replace(microsecond=0),
         nullable=False,
     )
@@ -203,10 +203,12 @@ class Meeting(Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     starts_at: Mapped[datetime] = mapped_column(
-        DateTime, nullable=False
+        DateTime(timezone=True), nullable=False
     )
 
-    ends_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    ends_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
 
     team: Mapped['Team'] = relationship(back_populates='meetings')
     organizer: Mapped['User'] = relationship(
@@ -256,7 +258,7 @@ class Evaluation(Base):
     score: Mapped[int] = mapped_column(nullable=False)
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now().replace(microsecond=0),
         nullable=False,
     )
