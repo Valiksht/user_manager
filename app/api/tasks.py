@@ -6,8 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies.role import get_current_manager_by_task
-from app.dependencies.task import get_task_obj_with_user_obj
+from app.dependencies.task import (
+    get_comment_obj,
+    get_task_obj_with_user_obj,
+)
 from app.models import (
+    Comment,
     Task,
     User,
 )
@@ -16,6 +20,7 @@ from app.schemas import (
     CommentResponse,
     EvaluationCreate,
     EvaluationResponse,
+    EvaluationSummaryResponse,
     TaskDetailResponse,
     TaskResponse,
 )
@@ -31,6 +36,10 @@ from app.services.tasks import (
     get_user_evaluation_list,
     task_detail,
     task_for_user,
+    update_task_comment,
+)
+from app.services.tasks import (
+    delete_comment as delete_comment_serves,
 )
 
 router = APIRouter(prefix='/tasks', tags=['Task'])
@@ -90,6 +99,44 @@ async def task_comment(
     Комментарий сохраняется с указанием автора.
     """
     return await create_task_comment(comment_data, task.id, user.id, db)
+
+
+@router.patch(
+    '/{task_id}/comments/{comment_id}',
+    response_model=CommentResponse,
+    summary='Изменить комментарий'
+)
+async def update_comment(
+    comment_data: CommentCreate,
+    comment: Comment = Depends(get_comment_obj),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    ):
+    """
+    Изменить созданный коментарий.
+    
+    Изменить комментарий может только автор комментария.
+    Дата созания коментария при его изменении, обновляется.
+    """
+    comment = await update_task_comment(comment_data, comment, user.id, db)
+    return comment
+
+
+@router.delete(
+    '/{task_id}/comments/{comment_id}',
+    summary='Удалть комментарий'
+)
+async def delete_comment(
+        comment: Comment = Depends(get_comment_obj),
+        user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+):
+    """
+    Удаление коментария
+    Операция доступна только автору комментария, 
+    администратору или суперпользователю.
+    """
+    return await delete_comment_serves(comment, user, db)
 
 
 @router.get(
@@ -157,7 +204,7 @@ async def get_evaluation(
 
 @router.get(
     '/evaluations/me',
-    response_model=list[EvaluationResponse],
+    response_model=EvaluationSummaryResponse,
     summary='Получить свои оценки.',
 )
 async def get_all_evaluation_me(

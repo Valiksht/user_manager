@@ -82,9 +82,9 @@ async def team_create(
     status_code=status.HTTP_201_CREATED,
     summary='Изменить информацию о команде.',
 )
-async def team_update(
-    team_id: int,
+async def team_update(   
     team_data: TeamUpdate,
+    team_obj: Team = Depends(get_team_obj),
     user: User = Depends(get_current_admin),
     manager_role: Role = Depends(get_manager_role),
     db: AsyncSession = Depends(get_db),
@@ -96,7 +96,7 @@ async def team_update(
 
     Данные команды обновляются в соответствии с переданными значениями.
     """
-    team = await update_team(team_id, team_data, manager_role, user, db)
+    team = await update_team(team_obj, team_data, db)
     return TeamResponseDetail(
         id=team.id,
         name=team.name,

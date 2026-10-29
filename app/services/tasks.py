@@ -1,31 +1,36 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
 from fastapi import (
     HTTPException,
     status,
 )
-from sqlalchemy.exc import IntegrityError
 
 from app.crud.tasks import (
+    create_comment,
+    create_evaluation,
+    create_task,
     get_comment_from_task_id,
     get_evaluation,
     get_task_id_with_user_in_team,
     get_task_list_user,
     get_task_with_details,
+    get_user_evaluation_summary,
+    update_comment,
 )
 from app.crud.tasks import (
     get_user_evaluation_list as evaluation_list,
+)
+from app.crud.tasks import (
+    update_task as update_task_crud,
 )
 from app.crud.teams import (
     user_in_team,
 )
 from app.dependencies.role import get_manager_role
 from app.models import (
-    Comment,
-    Evaluation,
-    Task,
     TaskStatus,
 )
+from app.schemas import EvaluationSummaryResponse
 from app.services.handlers import (
     NotFoundItemException,
     PermissionDeniedException,
@@ -55,16 +60,7 @@ async def create_new_tast(task_data, team_id, user_id, db):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Дата выполнения не может быть раньше текущей',
         )
-    task = Task(
-        team_id=team_id,
-        assignee_id=task_data.assignee_id,
-        title=task_data.title,
-        description=task_data.description,
-        due_date=task_data.due_date,
-    )
-    db.add(task)
-    await db.commit()
-    await db.refresh(task)
+    task = create_task(team_id, task_data, db)
     return task
 
 
@@ -106,10 +102,7 @@ async def update_task(task_data, team_id, user_id, task, db):
             detail='Дата выполнения не может быть раньше текущей',
         )
 
-    for field, value in update_data.items():
-        setattr(task, field, value)
-    await db.commit()
-    await db.refresh(task)
+    task = await update_task(task, update_data, db)
     return task
 
 
@@ -131,15 +124,34 @@ async def task_for_user(user_id, db):
 
 
 async def create_task_comment(comment_data, task_id, user_id, db):
-    comment = Comment(
-        task_id=task_id,
-        author_id=user_id,
-        text=comment_data.text,
-    )
-    db.add(comment)
-    await db.commit()
-    await db.refresh(comment)
+    comment = create_comment(task_id, user_id, comment_data, db)
     return comment
+
+
+async def update_task_comment(comment_data, comment, user_id, db):
+    if comment.author_id != user_id:
+        raise PendingDeprecationWarning(
+            'Вы не можете изменять чужие комментарии'
+        )
+    if comment.text == comment_data.text:
+        return comment
+    update_data = comment_data.model_dump(exclude_unset=True)
+    update_data['created_at'] = datetime.now(timezone.utc)
+    comment = await update_comment(update_data, comment, db)
+    return comment
+
+
+async def delete_comment(comment, user, db):
+    if (
+        comment.author_id != user.id
+        or user.is_admin != True
+        or user.is_superuser != True
+    ):
+        raise PermissionDeniedException(
+            'Вы не можете удалить коментарий'
+        )
+    await db.delete(comment)
+    await db.commit()
 
 
 async def get_task_comment_list(task_id, db):
@@ -153,23 +165,7 @@ async def create_task_evaluation(evaluation_data, task, user, db):
             status_code=status.HTTP_409_CONFLICT,
             detail='Нельзя оценивать невыполненные задачи',
         )
-    evaluation = Evaluation(
-        task_id=task.id,
-        user_id=task.assignee_id,
-        manager_id=user.id,
-        score=evaluation_data.score,
-        comment=evaluation_data.comment,
-    )
-    db.add(evaluation)
-    try:
-        await db.commit()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail='Эта задача уже имеет оценку',
-        )
-    await db.refresh(evaluation)
+    evaluation = create_evaluation(evaluation_data, task, user, db)
     return evaluation
 
 
@@ -182,4 +178,9 @@ async def get_user_evaluation_list(user_id, db):
     evaluations = await evaluation_list(user_id, db)
     if not evaluations:
         return []
-    return evaluations
+    count, summary = await get_user_evaluation_summary(user_id, db)
+    return EvaluationSummaryResponse(
+        summary=round(summary, 2) if summary is not None else 0.0,
+        count = count,
+        detail = evaluations,
+    )

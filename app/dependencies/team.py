@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,11 +11,18 @@ async def get_team_obj(
     team_id: int,
     db: AsyncSession = Depends(get_db),
 ):
+    if not team_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='не передан "team_id"',
+        )
     team = await db.scalar(
         select(Team).where(
             Team.id == team_id,
         )
     )
-    if not team:
-        raise NotFoundItemException('Команды не существует')
+    if team is None:
+        raise NotFoundItemException(
+            f'Команда с id {team_id} не найдена'
+        )
     return team

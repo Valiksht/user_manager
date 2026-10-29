@@ -317,6 +317,15 @@ class EvaluationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class EvaluationSummaryResponse(BaseModel):
+    """
+    Данные оценки зачач, включая средний балл за выполнение задач.
+    """
+    summary: float
+    count: int
+    deteil: list[EvaluationResponse]
+
+
 class TaskDetailResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

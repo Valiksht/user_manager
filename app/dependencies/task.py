@@ -1,7 +1,8 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.tasks import (
+    get_comment_by_id,
     get_task_obj_with_user_in_team,
     get_task_with_team_id,
 )
@@ -29,3 +30,20 @@ async def get_task_obj_with_user_obj(
     if not task:
         raise NotFoundItemException('Задача не найдена')
     return task
+
+async def get_comment_obj(
+    task_id: int,
+    comment_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    if comment_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='не передан id коментария'
+        )
+    comment = await get_comment_by_id(comment_id, task_id, db)
+    if comment is None:
+        raise NotFoundItemException(
+            'Комментарий не найден или не существует'
+        ) 
+    return comment  

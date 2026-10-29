@@ -1,10 +1,13 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from fastapi import HTTPException, status
+from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.models import Comment, Evaluation, Task, TeamUser
 from app.services.handlers import NotFoundItemException
+from app.services.tasks import update_task_comment
 
 
 async def get_task_with_team_id(task_id, team_id, db):
@@ -76,6 +79,14 @@ async def get_comment_from_task_id(task_id, db):
     )
     return comments
 
+async def get_comment_by_id(comment_id, task_id, db):
+    comment = await db.scalar(
+        select(Comment).where(
+            Comment.id == comment_id,
+            Comment.task_id == task_id
+        )
+    )
+    return comment
 
 async def get_evaluation(task_id, db):
     evaluation = await db.scalar(
@@ -83,9 +94,82 @@ async def get_evaluation(task_id, db):
     )
     return evaluation
 
+async def get_user_evaluation_summary(user_id, db):
+    count, summary = (
+        await db.execute(
+            select(
+                func.count(Evaluation.id),
+                func.avg(Evaluation.score),
+            ).where(
+                Evaluation.user_id == user_id,
+            )
+        )
+    )
+    return count, summary
 
 async def get_user_evaluation_list(user_id, db):
     evaluations = await db.scalars(
         select(Evaluation).where(Evaluation.user_id == user_id)
     )
     return evaluations
+
+async def create_task(team_id, task_data, db):
+    task = Task(
+        team_id=team_id,
+        assignee_id=task_data.assignee_id,
+        title=task_data.title,
+        description=task_data.description,
+        due_date=task_data.due_date,
+    )
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+    return task
+
+async def update_task(task, update_data, db):
+    for field, value in update_data.items():
+        setattr(task, field, value)
+    await db.commit()
+    await db.refresh(task)
+    return task
+
+async def create_comment(task_id, user_id, comment_data, db):
+    comment = Comment(
+        task_id=task_id,
+        author_id=user_id,
+        text=comment_data.text,
+    )
+    db.add(comment)
+    await db.commit()
+    await db.refresh(comment)
+    return comment
+
+async def update_comment(comment_data, comment_obj, db):
+    for field, value in comment_data.items():
+        setattr(comment_obj, field, value)
+    await db.commit()
+    await db.refresh(comment_obj)
+    return comment_obj
+
+async def create_evaluation(evaluation_data, task, user, db):
+    evaluation = Evaluation(
+        task_id=task.id,
+        user_id=task.assignee_id,
+        manager_id=user.id,
+        score=evaluation_data.score,
+        comment=evaluation_data.comment,
+    )
+    db.add(evaluation)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail='Эта задача уже имеет оценку',
+        )
+    await db.refresh(evaluation)
+    return evaluation
+
+async def update_evaluation():
+    pass

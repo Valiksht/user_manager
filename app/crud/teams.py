@@ -26,18 +26,6 @@ async def get_all_role_name(db):
     return roles
 
 
-async def get_team_by_id(team_id, db) -> Team:
-    if not team_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='не передан "team_id"',
-        )
-    team = await db.scalar(select(Team).where(Team.id == team_id))
-    if team is None:
-        raise NotFoundItemException(f'Команда с id {team_id} не найдена')
-    return team
-
-
 async def get_team_by_name(team_name, db) -> Team:
     if not team_name:
         raise HTTPException(
@@ -90,3 +78,32 @@ async def get_user_in_team(team_id, db):
         .where(TeamUser.team_id == team_id)
     )
     return users
+
+
+async def create_team(
+    team_data, user_creater, invite_code_hash, manager_role, db
+):
+    team = Team(
+        name=team_data.name,
+        description=team_data.description,
+        invite_code=invite_code_hash,
+    )
+    db.add(team)
+    await db.flush()
+    team_user = TeamUser(
+        user_id=user_creater.id,
+        team_id=team.id,
+        role_id=manager_role.id,
+    )
+    db.add(team_user)
+    await db.commit()
+    await db.refresh(team)
+    return team
+
+
+async def update_team(team_obj, update_data, db):
+    for field, value in update_data.items():
+        setattr(team_obj, field, value)
+    await db commit()
+    await db.refresh(team_obj)
+    return team_obj

@@ -4,13 +4,16 @@ from fastapi import (
 )
 
 from app.crud.teams import (
+    create_team,
     get_all_role_name,
     get_role,
-    get_team_by_id,
     get_team_by_name,
     get_team_members,
     get_team_with_user,
     user_in_team,
+)
+from app.crud.teams import (
+    update_team as update_team_crud,
 )
 from app.dependencies.role import get_manager_role
 from app.models import Team, TeamUser
@@ -62,21 +65,10 @@ async def create_new_team(team_data, user_creater, manager_role, db):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Команда с таким названием уже существует',
         )
-    team = Team(
-        name=team_data.name,
-        description=team_data.description,
-        invite_code=hash_password(team_data.invite_code),
+    invite_code_hash = hash_password(team_data.invite_code)
+    team = await create_team(
+        team_data, user_creater, invite_code_hash, manager_role, db
     )
-    db.add(team)
-    await db.flush()
-    team_user = TeamUser(
-        user_id=user_creater.id,
-        team_id=team.id,
-        role_id=manager_role.id,
-    )
-    db.add(team_user)
-    await db.commit()
-    await db.refresh(team)
     return TeamResponseDetail(
         id=team.id,
         name=team.name,
@@ -91,29 +83,28 @@ async def create_new_team(team_data, user_creater, manager_role, db):
     )
 
 
-async def update_team(team_id, team_data, manager_role, user, db):
-    team = await get_team_by_id(team_id, db)
-    if team_data.name is not None:
-        exist_team = await get_team_by_name(team_data.name, db)
-        if exist_team:
+async def update_team(team_obj, team_data, db):
+    update_data = team_data.model_dump(exclude_unset=True)
+    new_name = update_data.get('name')
+    if new_name is not None and new_name != team_obj.name:
+        exist_team = await get_team_by_name(new_name, db)
+        if exist_team and exist_team.id != team_obj.id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Команда с таким названием уже существует',
             )
-        team.name = team_data.name
-    if team_data.description is not None:
-        team.description = team_data.description
-    if team_data.invite_code is not None:
-        team.invite_code = hash_password(team_data.invite_code)
-    await db.commit()
-    await db.refresh(team)
-    team_members = await get_team_members(team.id, db)
+    if update_data.get('invite_code') is not None:
+        update_data['invite_code'] = hash_password(
+            update_data['invite_code']
+        )
+    team_obj = await update_team_crud(team_obj, update_data, db)
+    team_members = await get_team_members(team_obj.id, db)
     members = team_members.all()
     team_in_role = transform_team_user_respose(members)
     return TeamResponseDetail(
-        id=team.id,
-        name=team.name,
-        description=team.description,
+        id=team_obj.id,
+        name=team_obj.name,
+        description=team_obj.description,
         members=team_in_role,
     )
 
