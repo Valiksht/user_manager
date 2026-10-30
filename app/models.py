@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 
 from sqlalchemy import (
@@ -182,7 +182,7 @@ class Comment(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now().replace(microsecond=0),
+        default=lambda: datetime.now(timezone.utc).replace(microsecond=0),
         nullable=False,
     )
 
@@ -259,7 +259,7 @@ class Evaluation(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now().replace(microsecond=0),
+        default=lambda: datetime.now(timezone.utc).replace(microsecond=0),
         nullable=False,
     )
 

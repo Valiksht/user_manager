@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     JWT_ALGORITHM: str = 'HS256'
     JWT_TOKEN_LIFE_MINUTES: int = 30
-    JWT_TOKEN_LIFE_MINUTES_DEBUD: int = 9999999999
+    JWT_TOKEN_LIFE_MINUTES_DEBUD: int = 130000
     POSTGRES_HOST: str = 'localhost'
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = 'team_manager'
