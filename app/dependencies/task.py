@@ -23,7 +23,7 @@ async def get_task_obj_with_team_id(
 
 async def get_task_obj_with_user_obj(
     task_id: int,
-    user_id: User = Depends(get_id_from_token),
+    user_id: int = Depends(get_id_from_token),
     db: AsyncSession = Depends(get_db),
 ):
     task = await get_task_obj_with_user_in_team(task_id, user_id, db)

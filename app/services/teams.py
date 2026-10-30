@@ -62,7 +62,7 @@ async def create_new_team(team_data, user_creater, manager_role, db):
     exist_team = await get_team_by_name(team_data.name, db)
     if exist_team:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail='Команда с таким названием уже существует',
         )
     invite_code_hash = hash_password(team_data.invite_code)
@@ -145,7 +145,7 @@ async def join_to_team_with_invite_code(
     )
     if not invite_code_is_valid:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail='Неверный invite код',
         )
     exist_user = await user_in_team(team.id, user.id, db)

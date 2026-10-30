@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 
 from sqlalchemy import select
@@ -22,12 +23,18 @@ async_session_factory = async_sessionmaker(
     class_=AsyncSession,
 )
 
+parser = argparse.ArgumentParser(description="Создание суперпользователя")
+parser.add_argument('--email', help="Email суперпользователя")
+parser.add_argument('--username', help="Имя пользователя")
+parser.add_argument('--password', help="Пароль")
+
 
 async def create_superuser():
+    args = parser.parse_args()
     async with async_session_factory() as db:
-        email = input('Email: ')
-        username = input('Username: ')
-        password = input('Password: ')
+        email = args.email or input("Введите email: ")
+        username = args.username or input("Введите username: ")
+        password = args.password or input("Введите пароль: ")
         existing_user = await db.scalar(
             select(User).where(
                 (User.email == email) | (User.username == username)

@@ -1,5 +1,6 @@
 import pytest
 
+from app.schemas import TaskResponse
 from app.services.auth import create_jwt_token
 from tests.conftest import get_future_date
 
@@ -48,7 +49,7 @@ async def test_create_task(
         ('description', 'Новое описание', 'manager', True),
         ('assignee_id', 2, 'manager', True),
         ('due_date', get_future_date().isoformat(), 'manager', True),
-        ('status', 'DONE', 'manager', True),
+        ('status', 'done', 'manager', True),
         ('title', 'Новое название', 'assignee', False),
         (
             'description',
@@ -58,7 +59,7 @@ async def test_create_task(
         ),
         ('assignee_id', 2, 'assignee', False),
         ('due_date', get_future_date().isoformat(), 'assignee', False),
-        ('status', 'DONE', 'assignee', True),
+        ('status', 'done', 'assignee', True),
     ],
 )
 async def test_update_task(
@@ -207,7 +208,7 @@ async def test_get_task_detail_task_not_found(
             ),
         },
     )
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 async def test_get_task_detail_unauthorized(
@@ -216,3 +217,62 @@ async def test_get_task_detail_unauthorized(
 ):
     response = await client.get(f'/tasks/{create_task.id}')
     assert response.status_code == 401
+
+@pytest.mark.parametrize(
+    "field",
+    ["title", "description", "assignee_id", "due_date", "status"],
+)
+async def test_task_patch_rejects_null(
+    create_task,
+    get_super_user_token,
+    client,
+    field,
+):
+    """PATCH не должен принимать null вместо значения поля задачи."""
+    response = await client.patch(
+        f"/teams/{create_task.team_id}/tasks/{create_task.id}",
+        headers={
+            "Authorization": (
+                f"Bearer {get_super_user_token['token']['access_token']}"
+            ),
+        },
+        json={field: None},
+    )
+
+    assert response.status_code == 422
+
+async def test_task_patch_rejects_unknown_status(
+    create_task,
+    get_super_user_token,
+    client,
+):
+    response = await client.patch(
+        f"/teams/{create_task.team_id}/tasks/{create_task.id}",
+        headers={
+            "Authorization": (
+                f"Bearer {get_super_user_token['token']['access_token']}"
+            ),
+        },
+        json={"status": "unknown_status"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_task_response_accepts_nullable_model_fields():
+    """Схема ответа должна соответствовать nullable-полям модели Task."""
+    response = TaskResponse.model_validate(
+        {
+            "id": 1,
+            "team_id": 1,
+            "assignee_id": None,
+            "title": "Задача",
+            "description": None,
+            "status": "open",
+            "due_date": None,
+        }
+    )
+
+    assert response.description is None
+    assert response.assignee_id is None
+    assert response.due_date is None

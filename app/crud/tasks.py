@@ -1,13 +1,12 @@
 from datetime import datetime
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.models import Comment, Evaluation, Task, TeamUser
 from app.services.handlers import NotFoundItemException
-from app.services.tasks import update_task_comment
 
 
 async def get_task_with_team_id(task_id, team_id, db):
@@ -104,7 +103,7 @@ async def get_user_evaluation_summary(user_id, db):
                 Evaluation.user_id == user_id,
             )
         )
-    )
+    ).first()
     return count, summary
 
 async def get_user_evaluation_list(user_id, db):

@@ -13,11 +13,6 @@ async def get_role(role_name, db):
             detail='не передан "role_name"',
         )
     role = await db.scalar(select(Role).where(Role.name == role_name))
-    if not role:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Не инициализированны базовые роли команды',
-        )
     return role
 
 
@@ -104,6 +99,6 @@ async def create_team(
 async def update_team(team_obj, update_data, db):
     for field, value in update_data.items():
         setattr(team_obj, field, value)
-    await db commit()
+    await db.commit()
     await db.refresh(team_obj)
     return team_obj

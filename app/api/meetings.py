@@ -17,6 +17,7 @@ from app.schemas import (
     CalendarResponse,
     MeetCreate,
     MeetResponse,
+    MeetUpdate,
 )
 from app.services.auth import (
     get_current_user,
@@ -24,6 +25,8 @@ from app.services.auth import (
 from app.services.meetings import (
     create_new_meet,
     meet_and_task_list,
+    meet_list_user,
+    meet_update,
 )
 
 router = APIRouter(prefix='/calendar', tags=['Meeteng'])
@@ -53,7 +56,7 @@ async def meet(
 
 @router.get(
     '/me',
-    response_model=CalendarResponse,
+    response_model=list[MeetResponse],
     summary='Получить свои встречи.',
 )
 async def me_meet(
@@ -68,7 +71,7 @@ async def me_meet(
     В ответе возвращаются встречи, в которые текущий пользователь
     был добавлен как участник.
     """
-    return await meet_and_task_list(starts_at, ends_at, user.id, db)
+    return await meet_list_user(starts_at, ends_at, user.id, db)
 
 
 @router.post(
@@ -95,3 +98,17 @@ async def create_meet(
     Если список участников не указан, во встречу добавляются все участники команды.
     """
     return await create_new_meet(meet_data, team.id, user, db)
+
+
+@router.patch(
+    '/meet/{meet_id}',
+    response_model=MeetResponse,
+    summary='Изменить данные встречи',
+)
+async def update_meet(
+    meet_id: int,
+    meet_data: MeetUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await meet_update(meet_id, meet_data, user, db)

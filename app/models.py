@@ -81,7 +81,7 @@ class Team(Base):
     name: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False
     )
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
     invite_code: Mapped[str] = mapped_column(
         String(255), nullable=False
     )
@@ -150,7 +150,7 @@ class Task(Base):
         ForeignKey('users.id'), nullable=True
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(
         default=TaskStatus.OPEN, nullable=False
     )
@@ -201,7 +201,7 @@ class Meeting(Base):
         ForeignKey('users.id'), nullable=False
     )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
     starts_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )

@@ -40,7 +40,7 @@ async def test_register_duplicate_email(
         '/auth/register',
         json=dub_email,
     )
-    assert response.status_code == 400
+    assert response.status_code == 409
 
 
 async def test_register_duplicate_username(
@@ -57,7 +57,7 @@ async def test_register_duplicate_username(
         '/auth/register',
         json=dub_username,
     )
-    assert response.status_code == 400
+    assert response.status_code == 409
 
 
 async def test_login_success(user_data, client):

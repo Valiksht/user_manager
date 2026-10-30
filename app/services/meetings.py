@@ -1,14 +1,20 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import (
     HTTPException,
 )
 
 from app.crud.meetings import (
+    add_user_list_from_meeting,
     exist_meeting_team,
     exist_meeting_user,
     get_meet_list_team,
     get_meet_list_user,
+    get_meet_by_id,
+    get_user_meet_id_by_id,
+    get_user_meet_small_obj_by_id,
+    remove_user_list_from_meeting,
+    update_meet,
 )
 from app.crud.tasks import (
     get_task_list_user_with_date,
@@ -18,6 +24,7 @@ from app.models import (
     Meeting,
     UserMeeting,
 )
+from app.services.handlers import PermissionDeniedException
 from app.schemas import CalendarResponse
 from app.services.handlers import (
     NotFoundItemException,
@@ -68,7 +75,11 @@ async def create_new_meet(meet_data, team_id, user_creator, db):
             status_code=400,
             detail='Время начала должно быть позже текущего времени',
         )
-
+    if (meet_data.ends_at - meet_data.starts_at) >= timedelta(hours=8):
+        raise HTTPException(
+            status_code=400,
+            detail='Встреча не может длиться больше 8 часов',
+        )
     users_in_team = (await get_user_in_team(team_id, db)).all()
     users_in_team_id = [user.id for user in users_in_team]
     if meet_data.users is not None:
@@ -94,7 +105,7 @@ async def create_new_meet(meet_data, team_id, user_creator, db):
         )
 
     existing_meeting_user = await exist_meeting_user(
-        members_meet_id, meet_data, db
+        members_meet_id, meet_data.starts_at, meet_data.ends_at, db
     )
     if existing_meeting_user:
         raise HTTPException(
@@ -125,3 +136,74 @@ async def create_new_meet(meet_data, team_id, user_creator, db):
     await db.refresh(meeting)
     meeting.users = current_members_meet
     return meeting
+
+
+async def meet_update(meet_id, meet_data, user, db):
+    meet = await get_meet_by_id(meet_id, db)
+    if meet.organizer_id != user.id:
+        raise PermissionDeniedException(
+            'Изменить встречу может только организатор'
+        )
+    update_data = meet_data.model_dump(exclude_unset=True)
+    users_add = update_data.pop('users_add', None)
+    users_remove = update_data.pop('users_remove', None)
+    current_starts_at = meet.starts_at
+    current_ends_at = meet.ends_at
+    if 'starts_at' in update_data:
+        if meet_data.starts_at <= datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=400,
+                detail='Время начала должно быть позже текущего времени',
+            )
+        current_starts_at = update_data.get('starts_at')
+    if 'ends_at' in update_data:
+        if meet_data.ends_at <= current_starts_at:
+            raise HTTPException(
+                status_code=400,
+                detail='Время окончания должно быть позже времени начала',
+            )
+        current_ends_at = update_data.get('ends_at')
+    if (current_ends_at - current_starts_at) > timedelta(hours=8):
+        raise HTTPException(
+            status_code=400,
+            detail='Встреча не может длиться больше 8 часов',
+        )
+    try:
+        meet = await update_meet(meet, update_data, db)
+        if users_remove:
+            await remove_user_list_from_meeting(
+                meet.id, users_remove, db
+            )
+        meet_users_list = (
+            await get_user_meet_id_by_id(meet_id, db)
+        ).all()
+        if users_add:
+            duplicate_user = set(users_add) & set(meet_users_list)
+            if duplicate_user:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f'Пользователи с id {list(duplicate_user)} уже являются участниками встречи',
+                )
+            meet_users_list.extend(users_add)
+
+        exist_meet = await exist_meeting_user(
+            meet_users_list,
+            current_starts_at,
+            current_ends_at,
+            db,
+            meet.id,
+        )
+        if exist_meet:
+            raise HTTPException(
+                status_code=409,
+                detail='Время встречи пересекается с существующей встречей учасника встречи',
+            )
+        if users_add:
+            await add_user_list_from_meeting(meet.id, users_add, db)
+        await db.commit()
+        users = await get_user_meet_small_obj_by_id(meet.id, db)
+        meet.users = users.all()
+        return meet
+    except Exception as e:
+        await db.rollback()
+        raise e

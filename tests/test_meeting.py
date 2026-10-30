@@ -1,6 +1,8 @@
+from pydantic import ValidationError
 import pytest
 from datetime import datetime, timedelta
 
+from app.schemas import MeetUpdate
 from tests.conftest import get_future_date
 
 
@@ -252,9 +254,9 @@ async def test_get_my_meetings(
     )
     assert response.status_code == 200
     response_data = response.json()
-    assert len(response_data['meetings']) == 1
-    assert response_data['meetings'][0]['id'] == create_user_meeting.id
-    assert response_data['tasks'] == []
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]['id'] == create_user_meeting.id
 
 async def test_create_meet_with_users_in_one_time(
     create_user_meeting,
@@ -280,3 +282,42 @@ async def test_create_meet_with_users_in_one_time(
             == 'Время встречи пересекается с существующей встречей учасника встречи'
         )
 
+def test_meet_update_normalizes_naive_datetimes():
+    data = MeetUpdate(starts_at="2030-01-01T10:00:00")
+
+    assert data.starts_at.tzinfo is not None
+    assert data.starts_at.utcoffset().total_seconds() == 0
+
+
+def test_meet_update_rejects_user_in_add_and_remove_lists():
+    with pytest.raises(ValidationError):
+        MeetUpdate(users_add=[1, 2], users_remove=[2, 3])
+
+
+def test_meet_update_rejects_duplicate_user_ids():
+    with pytest.raises(ValidationError):
+        MeetUpdate(users_add=[1, 1])
+
+
+async def test_create_meeting_rejects_duration_over_eight_hours(
+    create_team,
+    get_super_user_token,
+    meet_data,
+    client,
+):
+    starts_at = get_future_date(8)
+    ends_at = starts_at + timedelta(hours=9)
+    meet_data["starts_at"] = starts_at.isoformat()
+    meet_data["ends_at"] = ends_at.isoformat()
+
+    response = await client.post(
+        f"/calendar/{create_team.id}",
+        headers={
+            "Authorization": (
+                f"Bearer {get_super_user_token['token']['access_token']}"
+            ),
+        },
+        json=meet_data,
+    )
+
+    assert response.status_code == 400

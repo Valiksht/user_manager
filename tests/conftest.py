@@ -1,9 +1,10 @@
-import os
 from datetime import date, datetime, timedelta
 
+import asyncpg
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
@@ -30,18 +31,10 @@ from app.services.auth import (
     hash_password,
 )
 
-TEST_DATABASE_URL = (
-    settings.database_url.rsplit('/', 1)[0]
-    + f'/team_manager_test'
-)
-
-engine = create_async_engine(
-    TEST_DATABASE_URL,
-    poolclass=NullPool,
-)
 
 def get_future_date(hour: int | None = None):
     f_date = datetime.now().date() + timedelta(days=2)
+
     if hour is not None:
         return datetime(
             f_date.year,
@@ -49,17 +42,78 @@ def get_future_date(hour: int | None = None):
             f_date.day,
             hour,
         )
+
     return f_date
 
 
+TEST_DATABASE_NAME = "team_manager_test"
+
+# Формируем URL для подключения к тестовой БД.
+TEST_DATABASE_URL = make_url(settings.database_url).set(
+    database=TEST_DATABASE_NAME,
+)
+
+# Для создания и удаления БД подключаемся к служебной БД postgres.
+ADMIN_DATABASE_URL = make_url(settings.database_url).set(
+    drivername="postgresql",
+    database="postgres",
+).render_as_string(hide_password=False)
+
+test_engine = create_async_engine(
+    TEST_DATABASE_URL,
+    poolclass=NullPool,
+)
+
+
+@pytest_asyncio.fixture(
+    scope="session",
+    loop_scope="session",
+    autouse=True,
+)
+async def create_test_database():
+    # Подключаемся к служебной БД.
+    connection = await asyncpg.connect(ADMIN_DATABASE_URL)
+
+    try:
+        # Удаляем тестовую БД, если она осталась от предыдущего запуска.
+        await connection.execute(
+            f'DROP DATABASE IF EXISTS "{TEST_DATABASE_NAME}" WITH (FORCE)'
+        )
+
+        # Создаём чистую тестовую БД.
+        await connection.execute(
+            f'CREATE DATABASE "{TEST_DATABASE_NAME}"'
+        )
+    finally:
+        await connection.close()
+
+    yield
+
+    # Закрываем подключения к тестовой БД.
+    await test_engine.dispose()
+
+    # Повторно подключаемся к служебной БД.
+    connection = await asyncpg.connect(ADMIN_DATABASE_URL)
+
+    try:
+        # Удаляем тестовую БД после завершения всех тестов.
+        await connection.execute(
+            f'DROP DATABASE IF EXISTS "{TEST_DATABASE_NAME}" WITH (FORCE)'
+        )
+    finally:
+        await connection.close()
+
+
 @pytest_asyncio.fixture(autouse=True)
-async def clean_database():
-    async with engine.begin() as connection:
+async def clean_database(create_test_database):
+    # Перед каждым тестом пересоздаём таблицы.
+    async with test_engine.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
         await connection.run_sync(Base.metadata.create_all)
 
+    # Добавляем базовые роли.
     async with AsyncSession(
-        bind=engine,
+        bind=test_engine,
         expire_on_commit=False,
     ) as db:
         db.add_all([
@@ -77,16 +131,10 @@ async def clean_database():
     yield
 
 
-@pytest_asyncio.fixture(autouse=True)
-async def cleanup_test_database():
-    yield
-    await engine.dispose()
-
-
 @pytest_asyncio.fixture
 async def db():
     async with AsyncSession(
-        bind=engine,
+        bind=test_engine,
         expire_on_commit=False,
     ) as session:
         yield session
@@ -103,7 +151,7 @@ async def client(db):
 
     async with AsyncClient(
         transport=transport,
-        base_url='http://test',
+        base_url="http://test",
     ) as client:
         yield client
 

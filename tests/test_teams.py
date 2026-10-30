@@ -182,3 +182,88 @@ async def test_manager_cannot_remove_self(
     assert response.json()['detail'] == (
         'Менеджер не может удалить себя из команды'
     )
+
+async def test_update_team_returns_all_members_and_200(
+    create_team_with_users,
+    get_super_user_token,
+    client,
+):
+    team = create_team_with_users["team_obj"]
+    response = await client.patch(
+        f"/teams/{team.id}",
+        headers={
+            "Authorization": (
+                f"Bearer {get_super_user_token['token']['access_token']}"
+            ),
+        },
+        json={"name": "Обновлённая команда"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Обновлённая команда"
+
+    total_members = sum(
+        len(role["members"]) for role in data["members"]
+    )
+    # В команде один менеджер и все пользователи из create_users.
+    assert total_members == len(create_team_with_users["team_user"]) + 1
+
+
+async def test_updated_invite_code_can_be_used_to_join(
+    create_team,
+    create_jwt,
+    get_super_user_token,
+    client,
+):
+    team = create_team
+    manager_token = get_super_user_token["token"]["access_token"]
+    member_token = create_jwt["token"]["access_token"]
+
+    update_response = await client.patch(
+        f"/teams/{team.id}",
+        headers={"Authorization": f"Bearer {manager_token}"},
+        json={"invite_code": "новый-код-приглашения"},
+    )
+    assert update_response.status_code == 200
+
+    join_response = await client.post(
+        f"/teams/{team.id}/join",
+        headers={"Authorization": f"Bearer {member_token}"},
+        json={"invite_code": "новый-код-приглашения"},
+    )
+
+    assert join_response.status_code == 201
+    assert join_response.json()["role"] == "member"
+
+
+async def test_update_role_returns_404_for_unknown_role(
+    create_team_with_users,
+    get_super_user_token,
+    create_users,
+    client,
+):
+    team = create_team_with_users["team_obj"]
+    target_user = create_users[0]
+
+    response = await client.patch(
+        f"/teams/{team.id}/members/{target_user.id}",
+        headers={
+            "Authorization": (
+                f"Bearer {get_super_user_token['token']['access_token']}"
+            ),
+        },
+        json={"role_name": "role_that_does_not_exist"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"]
+
+
+async def test_invalid_bearer_token_returns_401(client):
+    response = await client.get(
+        "/users/me",
+        headers={"Authorization": "Bearer definitely-not-a-valid-token"},
+    )
+
+    assert response.status_code == 401

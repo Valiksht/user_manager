@@ -68,3 +68,23 @@ async def test_create_evaluation_by_member(
     )
 
     assert response.status_code == 403
+
+async def test_evaluation_summary_is_empty_object_when_user_has_no_scores(
+    create_jwt,
+    client,
+):
+    response = await client.get(
+        "/tasks/evaluations/me",
+        headers={
+            "Authorization": (
+                f"Bearer {create_jwt['token']['access_token']}"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "summary": 0.0,
+        "count": 0,
+        "detail": [],
+    }

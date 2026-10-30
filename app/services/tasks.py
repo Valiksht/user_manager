@@ -60,7 +60,7 @@ async def create_new_tast(task_data, team_id, user_id, db):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Дата выполнения не может быть раньше текущей',
         )
-    task = create_task(team_id, task_data, db)
+    task = await create_task(team_id, task_data, db)
     return task
 
 
@@ -72,8 +72,6 @@ async def update_task(task_data, team_id, user_id, task, db):
         )
     manager_role = await get_manager_role(db)
     perission = exist_user.role_id == manager_role.id
-    update_data = task_data.model_dump(exclude_unset=True)
-
     if not perission and task.assignee_id != user_id:
         raise PermissionDeniedException(
             'Вы не можете изменить эту задачу'
@@ -84,7 +82,7 @@ async def update_task(task_data, team_id, user_id, task, db):
             'Вы можете изменить только статус задачи'
         )
 
-    if 'assignee_id' in update_data and update_data['assignee_id']:
+    if 'assignee_id' in update_data:
         current_team = await user_in_team(
             team_id, task_data.assignee_id, db
         )
@@ -102,11 +100,16 @@ async def update_task(task_data, team_id, user_id, task, db):
             detail='Дата выполнения не может быть раньше текущей',
         )
 
-    task = await update_task(task, update_data, db)
+    task = await update_task_crud(task, update_data, db)
     return task
 
 
 async def task_detail(task_id, user_id, db):
+    task = await get_task_with_details(task_id, db)
+    if not task:
+        raise NotFoundItemException(
+            'Задача не найдена'
+        )
     depends_user = await get_task_id_with_user_in_team(
         task_id, user_id, db
     )
@@ -114,7 +117,6 @@ async def task_detail(task_id, user_id, db):
         raise PermissionDeniedException(
             'Вы не можете просматривать информацию об этой задаче'
         )
-    task = await get_task_with_details(task_id, db)
     return task
 
 
@@ -124,13 +126,13 @@ async def task_for_user(user_id, db):
 
 
 async def create_task_comment(comment_data, task_id, user_id, db):
-    comment = create_comment(task_id, user_id, comment_data, db)
+    comment = await create_comment(task_id, user_id, comment_data, db)
     return comment
 
 
 async def update_task_comment(comment_data, comment, user_id, db):
     if comment.author_id != user_id:
-        raise PendingDeprecationWarning(
+        raise PermissionDeniedException(
             'Вы не можете изменять чужие комментарии'
         )
     if comment.text == comment_data.text:
@@ -142,10 +144,10 @@ async def update_task_comment(comment_data, comment, user_id, db):
 
 
 async def delete_comment(comment, user, db):
-    if (
-        comment.author_id != user.id
-        or user.is_admin != True
-        or user.is_superuser != True
+    if not (
+        comment.author_id == user.id
+        or user.is_admin
+        or user.is_superuser
     ):
         raise PermissionDeniedException(
             'Вы не можете удалить коментарий'
@@ -165,7 +167,7 @@ async def create_task_evaluation(evaluation_data, task, user, db):
             status_code=status.HTTP_409_CONFLICT,
             detail='Нельзя оценивать невыполненные задачи',
         )
-    evaluation = create_evaluation(evaluation_data, task, user, db)
+    evaluation = await create_evaluation(evaluation_data, task, user, db)
     return evaluation
 
 
@@ -182,5 +184,5 @@ async def get_user_evaluation_list(user_id, db):
     return EvaluationSummaryResponse(
         summary=round(summary, 2) if summary is not None else 0.0,
         count = count,
-        detail = evaluations,
+        detail = evaluations.all(),
     )

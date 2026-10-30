@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,14 +17,26 @@ async def get_manager_role(
     db: AsyncSession = Depends(get_db),
 ) -> Role:
     role_name = MANAGER
-    return await get_role(role_name, db)
+    role = await get_role(role_name, db)
+    if role is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Не инициализированы базове роли'
+        )
+    return role
 
 
 async def get_member_role(
     db: AsyncSession = Depends(get_db),
 ) -> Role:
     role_name = MEMBER
-    return await get_role(role_name, db)
+    role = await get_role(role_name, db)
+    if role is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Не инициализированы базове роли'
+        )
+    return role
 
 
 async def get_current_manager_by_task(

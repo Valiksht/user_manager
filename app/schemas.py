@@ -6,6 +6,7 @@ from pydantic import (
     EmailStr,
     Field,
     field_validator,
+    model_validator,
 )
 
 from app.models import TaskStatus
@@ -144,6 +145,17 @@ class TeamUpdate(BaseModel):
         description='Новый код приглашения.',
     )
 
+    @model_validator(mode='before')
+    @classmethod
+    def validate_not_null(cls, data):
+        if isinstance(data, dict):
+            for field, value in data.items():
+                if value is None:
+                    raise ValueError(
+                        f'Поле {field} не может быть null'
+                    )
+        return data
+
 
 class TeamJoin(BaseModel):
     """
@@ -243,10 +255,21 @@ class TaskUpdate(BaseModel):
         default=None,
         description='Новый срок выполнения задачи.',
     )
-    status: str | None = Field(
+    status: TaskStatus | None = Field(
         default=None,
         description='Новый статус задачи.',
     )
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_not_null(cls, data):
+        if isinstance(data, dict):
+            for field, value in data.items():
+                if value is None:
+                    raise ValueError(
+                        f'Поле {field} не может быть null'
+                    )
+        return data
 
 
 class TaskResponse(BaseModel):
@@ -256,11 +279,11 @@ class TaskResponse(BaseModel):
 
     id: int
     team_id: int
-    assignee_id: int
+    assignee_id: int | None = None
     title: str
-    description: str
+    description: str | None = None
     status: str
-    due_date: date
+    due_date: date | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -323,7 +346,7 @@ class EvaluationSummaryResponse(BaseModel):
     """
     summary: float
     count: int
-    deteil: list[EvaluationResponse]
+    detail: list[EvaluationResponse]
 
 
 class TaskDetailResponse(BaseModel):
@@ -374,6 +397,80 @@ class MeetCreate(BaseModel):
             return None
         return normalize_datetime(value)
 
+class MeetUpdate(BaseModel):
+    """
+    Данные для изменения изформации о встрече команды.
+    """
+
+    name: str | None  = Field(
+        default=None,
+        description='Название встречи.',
+    )
+    description: str | None = Field(
+        default=None,
+        description='Описание встречи.',
+    )
+    starts_at: datetime | None  = Field(
+        default=None,
+        description='Дата и время начала встречи.',
+    )
+    ends_at: datetime | None  = Field(
+        default=None,
+        description='Дата и время окончания встречи.',
+    )
+    users_add: list[int] | None = Field(
+        default=None,
+        description=(
+            'Добавить учасников. '
+        ),
+    )
+    users_remove: list[int] | None = Field(
+        default=None,
+        description=(
+            'удалить учасников. '
+        ),
+        )
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_not_null(cls, data):
+        if isinstance(data, dict):
+            for field, value in data.items():
+                if value is None:
+                    raise ValueError(
+                        f'Поле {field} не может быть null'
+                    )
+        return data
+
+    @model_validator(mode='after')
+    def validate_user_list(self):
+        if self.users_add is not None and self.users_remove is not None:
+            intersection = set(self.users_add) & set(self.users_remove)
+            if intersection:
+                raise ValueError(
+                    'Нельзя одновременно добавлять и удалять одного участника'
+                )    
+
+        if self.users_add is not None:
+            if len(self.users_add) != len(set(self.users_add)):
+                raise ValueError(
+                    'В списке добавляемых участников есть дубликаты'
+                )    
+
+        if self.users_remove is not None:
+            if len(self.users_remove) != len(set(self.users_remove)):
+                raise ValueError(
+                    'В списке удаляемых участников есть дубликаты'
+                )    
+
+        return self
+
+    @field_validator('starts_at', 'ends_at')
+    @classmethod
+    def normalize_date(cls, value: datetime | None):
+        if value is None:
+            return None
+        return normalize_datetime(value)
 
 class MeetingFilter(BaseModel):
     starts_at: datetime | None = None

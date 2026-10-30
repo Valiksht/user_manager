@@ -1,935 +1,3359 @@
 {
   "info": {
-    "_postman_id": "c1a4553e-06e0-4720-a174-d2311279cd99",
-    "name": "Team_app",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "58349105",
-    "_collection_link": "https://go.postman.co/collection/58349105-c1a4553e-06e0-4720-a174-d2311279cd99?source=collection_link"
+    "_postman_id": "a3b6c10d-37bd-4ad2-a125-7d86c5cc7c1b",
+    "name": "Team Manager API — полный сквозной сценарий",
+    "description": "Последовательный интеграционный сценарий для Team Manager API. Перед запуском укажите superEmail и superPassword — данные существующего суперпользователя. Запускайте всю коллекцию сверху вниз через Collection Runner. Коллекция создаёт четыре тестовых аккаунта, две команды, задачи, комментарии, оценки и встречи. У каждого запуска новые email, логины и названия команд; повторный запуск не конфликтует с предыдущими данными. Проверки ожидаемых ошибок находятся в последней папке. Последний запрос удаляет участника из команды.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string",
+      "description": "Адрес запущенного FastAPI-приложения."
+    },
+    {
+      "key": "superEmail",
+      "value": "CHANGE_ME_SUPERUSER_EMAIL",
+      "type": "string",
+      "description": "Email существующего суперпользователя, созданного командой python -m app.services.create_superuser."
+    },
+    {
+      "key": "superPassword",
+      "value": "CHANGE_ME_SUPERUSER_PASSWORD",
+      "type": "string",
+      "description": "Пароль существующего суперпользователя."
+    },
+    {
+      "key": "superToken",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user1Token",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user2Token",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user3Token",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user4Token",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user1Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user2Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user3Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "user4Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "team1Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "team2Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "task1Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "task2Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "task3Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "comment1Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "meeting1Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "meeting2Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "meeting3Id",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    },
+    {
+      "key": "evaluationTaskId",
+      "value": "",
+      "type": "string",
+      "description": "Заполняется автоматически тестовыми скриптами после успешного запроса."
+    }
+  ],
   "item": [
     {
-      "name": "regist",
+      "name": "01 — Проверка сервера, регистрация и вход",
+      "description": "Проверка доступности API, вход суперпользователя, регистрация четырёх пользователей и получение токенов.",
       "item": [
         {
-          "name": "/auth/register",
+          "name": "00 — Проверка доступности API и БД",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "01 — Вход существующего суперпользователя",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Перед первым запуском создайте superuser командой python -m app.services.create_superuser и задайте superEmail/superPassword в переменных коллекции.",
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"rubanov.valentin@ya.ru\",\r\n    \"username\": \"valik\",\r\n    \"first_name\": \"Валентин\",\r\n    \"last_name\": \"Рубанов\",\r\n    \"password\": \"11111111\",\r\n    \"age\": 30\r\n}",
+              "raw": "{\n  \"email\": \"{{superEmail}}\",\n  \"password\": \"{{superPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('superToken', d.access_token); pm.test('Вход суперпользователя выполнен',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Регистрация пользователя 1 (Анна)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/auth/register",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/auth/register",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "auth",
                 "register"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user1Email}}\",\n  \"username\": \"{{user1Username}}\",\n  \"first_name\": \"Анна\",\n  \"last_name\": \"Тестов\",\n  \"password\": \"TestPass123!\",\n  \"age\": 31\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
-        },
-        {
-          "name": "/users",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://127.0.0.1:8000/users",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/auth/login",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const suffix = Date.now().toString();",
+                  "pm.collectionVariables.set('runSuffix', suffix);",
+                  "const names = [1,2,3,4];",
+                  "for (const i of names) {",
+                  " pm.collectionVariables.set('user'+i+'Email', 'pm_user'+i+'_'+suffix+'@example.com');",
+                  " pm.collectionVariables.set('user'+i+'Username', 'pmuser'+i+'_'+suffix);",
+                  "}",
+                  "const d = new Date(); d.setDate(d.getDate()+7); pm.collectionVariables.set('futureDate', d.toISOString().slice(0,10));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Сохранить access_token в переменную\", function () {\r\n    // Парсим JSON из тела ответа\r\n    var jsonData = pm.response.json();\r\n    \r\n    // Сохраняем значение access_token в глобальную переменную\r\n    pm.collectionVariables.set(\"access_token\", jsonData.access_token);\r\n    \r\n    // Опционально: можно сохранить и token_type\r\n    pm.collectionVariables.set(\"token_type\", jsonData.token_type);\r\n    \r\n    console.log(\"Токен сохранен: \" + pm.collectionVariables.get(\"access_token\"));\r\n});"
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user1Id', d.id); pm.test('Пользователь 1 зарегистрирован',()=>pm.response.to.have.status(201)); }"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "03 — Регистрация пользователя 2 (Борис)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"rubanov.valentin@ya.ru\",\r\n    \"password\": \"11111111\"\r\n}",
+              "raw": "{\n  \"email\": \"{{user2Email}}\",\n  \"username\": \"{{user2Username}}\",\n  \"first_name\": \"Борис\",\n  \"last_name\": \"Тестов\",\n  \"password\": \"TestPass123!\",\n  \"age\": 32\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "http://127.0.0.1:8000/auth/login",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "auth",
-                "login"
-              ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "super login",
           "event": [
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "pm.test(\"Сохранить access_token в переменную\", function () {\r",
-                  "    // Парсим JSON из тела ответа\r",
-                  "    var jsonData = pm.response.json();\r",
-                  "    \r",
-                  "    // Сохраняем значение access_token в глобальную переменную\r",
-                  "    pm.collectionVariables.set(\"Super_token\", jsonData.access_token);\r",
-                  "    \r",
-                  "    // Опционально: можно сохранить и token_type\r",
-                  "    pm.collectionVariables.set(\"Super_type\", jsonData.token_type);\r",
-                  "    \r",
-                  "    console.log(\"Токен сохранен: \" + pm.collectionVariables.get(\"access_token\"));\r",
-                  "});"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user2Id', d.id); pm.test('Пользователь 2 зарегистрирован',()=>pm.response.to.have.status(201)); }"
+                ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "04 — Регистрация пользователя 3 (Мария)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"super@user.com\",\r\n    \"password\": \"11111111\"\r\n}",
+              "raw": "{\n  \"email\": \"{{user3Email}}\",\n  \"username\": \"{{user3Username}}\",\n  \"first_name\": \"Мария\",\n  \"last_name\": \"Тестов\",\n  \"password\": \"TestPass123!\",\n  \"age\": 33\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user3Id', d.id); pm.test('Пользователь 3 зарегистрирован',()=>pm.response.to.have.status(201)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Регистрация пользователя 4 (Дмитрий)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/auth/login",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/auth/register",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user4Email}}\",\n  \"username\": \"{{user4Username}}\",\n  \"first_name\": \"Дмитрий\",\n  \"last_name\": \"Тестов\",\n  \"password\": \"TestPass123!\",\n  \"age\": 34\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user4Id', d.id); pm.test('Пользователь 4 зарегистрирован',()=>pm.response.to.have.status(201)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Вход пользователя 1 (Анна)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "auth",
                 "login"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user1Email}}\",\n  \"password\": \"TestPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user1Token', d.access_token); pm.test('Вход пользователя 1 выполнен',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "/users/me",
+          "name": "07 — Вход пользователя 2 (Борис)",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
               ]
             },
-            "method": "GET",
-            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user2Email}}\",\n  \"password\": \"TestPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user2Token', d.access_token); pm.test('Вход пользователя 2 выполнен',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Вход пользователя 3 (Мария)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/users/me",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/auth/login",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user3Email}}\",\n  \"password\": \"TestPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user3Token', d.access_token); pm.test('Вход пользователя 3 выполнен',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Вход пользователя 4 (Дмитрий)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user4Email}}\",\n  \"password\": \"TestPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('user4Token', d.access_token); pm.test('Вход пользователя 4 выполнен',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Получение профиля суперпользователя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "users",
                 "me"
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Профиль успешно получен',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Получение профиля пользователя без команды",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user4Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "12 — Список пользователей от имени суперпользователя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "13 — Список пользователей от имени обычного пользователя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "14 — Обычный пользователь не может назначать администраторов",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{user4Id}}/admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{user4Id}}",
+                "admin"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Обычному пользователю отказано в доступе',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "Team",
+      "name": "02 — Создание команд и управление участниками",
+      "description": "Создание двух команд, вступление пользователей, просмотр состава и проверка прав доступа.",
       "item": [
         {
-          "name": "bad create team",
+          "name": "01 — Создание команды «Разработка»",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Первая команда\",\r\n    \"description\": \"Первая тестовая команда которая создается для спасения человечества\",\r\n    \"invite_code\": \"password\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
               }
-            },
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/teams",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "teams"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create team",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{Super_token}}",
-                  "type": "string"
-                }
-              ]
             },
-            "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Еще4 одна команда команда\",\r\n    \"description\": \"Четвертая тестовая команда которая создается для спасения человечества\",\r\n    \"invite_code\": \"password\"\r\n}",
+              "raw": "{\n  \"name\": \"Команда Разработка {{runSuffix}}\",\n  \"description\": \"Основная команда для проверки API\",\n  \"invite_code\": \"alpha-invite-1234\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('team1Id', d.id); pm.test('Команда 1 создана',()=>pm.response.to.have.status(201)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Создание команды «Поддержка»",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/teams",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "teams"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "all_team",
-          "request": {
-            "method": "GET",
-            "header": []
-          },
-          "response": []
-        },
-        {
-          "name": "team detail",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://127.0.0.1:8000/teams/1",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "teams",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "join in team",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"invite_code\": \"password\"\r\n}",
+              "raw": "{\n  \"name\": \"Команда Поддержка {{runSuffix}}\",\n  \"description\": \"Дополнительная команда для проверки API\",\n  \"invite_code\": \"beta-invite-1234\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('team2Id', d.id); pm.test('Команда 2 создана',()=>pm.response.to.have.status(201)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Обычный пользователь не может создать команду",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user4Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/teams/5/join",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
+              "path": [
+                "teams"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Запрещённая команда {{runSuffix}}\",\n  \"description\": \"Эта команда не должна быть создана\",\n  \"invite_code\": \"nope-invite-1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Обычному пользователю отказано в доступе',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Анна вступает в команду «Разработка»",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "teams",
-                "5",
+                "{{team1Id}}",
                 "join"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invite_code\": \"alpha-invite-1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Пользователь 1 вступил в команду',()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "team members",
+          "name": "05 — Борис вступает в команду «Разработка»",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user2Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/teams/5/members",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/join",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "teams",
-                "5",
+                "{{team1Id}}",
+                "join"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invite_code\": \"alpha-invite-1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "06 — Мария вступает в команду «Поддержка»",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user3Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team2Id}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team2Id}}",
+                "join"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invite_code\": \"beta-invite-1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "07 — Проверка пользователя без команды",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user4Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('У пользователя 4 нет команд',()=>pm.expect(pm.response.code).to.be.oneOf([200]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Список команд суперпользователя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams"
+              ]
+            }
+          }
+        },
+        {
+          "name": "09 — Список команд Анны",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10 — Просмотр команды её участником",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "11 — Посторонний пользователь не видит чужую команду",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user3Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Постороннему пользователю отказано в доступе',()=>pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Просмотр участников команды суперпользователем",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
                 "members"
               ]
             }
+          }
+        },
+        {
+          "name": "13 — Просмотр участников команды Борисом",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user2Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "members"
+              ]
+            }
+          }
+        },
+        {
+          "name": "14 — Изменение описания команды",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Описание команды обновлено через Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "15 — Обычный участник не может изменить команду",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Изменение не должно быть разрешено\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Обычному пользователю отказано в доступе',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Назначение Бориса менеджером команды",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members/{{user2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "members",
+                "{{user2Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"manager\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "17 — Обычный участник не может менять роли",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members/{{user1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "members",
+                "{{user1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"member\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Участник не может управлять ролями',()=>pm.expect(pm.response.code).to.be.oneOf([403,404,409]));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "Task",
+      "name": "03 — Задачи, комментарии и оценки",
+      "description": "Создание задач, изменение статусов, работа с комментариями и выставление оценок.",
       "item": [
         {
-          "name": "create_task",
+          "name": "01 — Создание задачи для Анны",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{Super_token}}",
-                  "type": "string"
-                }
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "tasks"
               ]
             },
-            "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"assignee_id\": \"2\",\r\n    \"title\": \"Важная задача\",\r\n    \"description\": \"Первая важная задача которая создается для спасения человечества\",\r\n    \"due_date\": \"2026-10-01\"\r\n}",
+              "raw": "{\n  \"assignee_id\": \"{{user1Id}}\",\n  \"title\": \"Подготовить техническое задание\",\n  \"description\": \"Задача назначена Анне для проверки сценария\",\n  \"due_date\": \"{{futureDate}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('task1Id', d.id); pm.test('Задача создана',()=>pm.response.to.have.status(201)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Создание задачи для Бориса",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/teams/4/tasks",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "teams",
-                "4",
+                "{{team1Id}}",
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignee_id\": \"{{user2Id}}\",\n  \"title\": \"Проверить обработку ошибок\",\n  \"description\": \"Вторая задача команды Разработка\",\n  \"due_date\": \"{{futureDate}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('task2Id', d.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Создание задачи для Марии",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team2Id}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team2Id}}",
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignee_id\": \"{{user3Id}}\",\n  \"title\": \"Подготовить инструкцию пользователя\",\n  \"description\": \"Задача команды Поддержка\",\n  \"due_date\": \"{{futureDate}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('task3Id', d.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Обычный участник не может создавать задачи",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignee_id\": \"{{user1Id}}\",\n  \"title\": \"Запрещённая задача\",\n  \"description\": \"Запрос должен завершиться ошибкой\",\n  \"due_date\": \"{{futureDate}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Участник не может создавать задачи',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Список задач Анны",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
                 "tasks"
               ]
             }
-          },
-          "response": []
+          }
         },
         {
-          "name": "task_update",
+          "name": "06 — Список задач Марии",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user3Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ]
+            }
+          }
+        },
+        {
+          "name": "07 — Просмотр задачи её исполнителем",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "08 — Пользователь без команды не видит чужую задачу",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user4Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Постороннему пользователю отказано в доступе',()=>pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Анна переводит задачу в работу",
           "request": {
             "method": "PATCH",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/teams/4/tasks/1/",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks/{{task1Id}}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "teams",
-                "4",
+                "{{team1Id}}",
                 "tasks",
-                "1",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "all_task",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
+                "{{task1Id}}"
               ]
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://127.0.0.1:8000/tasks",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "tasks"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "tack_deteil",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://127.0.0.1:8000/tasks/1/",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "tasks",
-                "1",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "crate_tack_comment",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"text\": \"Очень полезный комментарий\"\r\n}",
+              "raw": "{\n  \"status\": \"in_progress\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "http://127.0.0.1:8000/tasks/1/comments",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "tasks",
-                "1",
-                "comments"
-              ]
             }
-          },
-          "response": []
+          }
         },
         {
-          "name": "get_tack_comment",
+          "name": "10 — Исполнитель не может менять название задачи",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/tasks/1/comments",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks/{{task1Id}}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
+                "teams",
+                "{{team1Id}}",
                 "tasks",
-                "1",
-                "comments"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "evaluation task",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{Super_token}}",
-                  "type": "string"
-                }
+                "{{task1Id}}"
               ]
             },
-            "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"score\": 5,\r\n    \"comment\": \"Задача выполнена полностью и в срок\"\r\n}",
+              "raw": "{\n  \"title\": \"Несанкционированное изменение\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Исполнитель не может менять название задачи',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Суперпользователь изменяет задачу",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/tasks/2/evaluation",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks/{{task1Id}}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "tasks",
+                "{{task1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Подготовить техническое задание - updated\",\n  \"description\": \"Описание обновлено менеджером команды\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "12 — Анна добавляет комментарий к задаче",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "tasks",
-                "2",
+                "{{task1Id}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Начинаю работу над задачей. Проверю требования и подготовлю результат.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('comment1Id', d.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Получение комментариев к задаче",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "comments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "14 — Анна изменяет свой комментарий",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/comments/{{comment1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "comments",
+                "{{comment1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Работа продолжается. Основные требования проверены.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "15 — Борис не может изменить чужой комментарий",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user2Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/comments/{{comment1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "comments",
+                "{{comment1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Нельзя изменять комментарий другого участника\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Нельзя изменять чужой комментарий',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Удаление комментария суперпользователем",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/comments/{{comment1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "comments",
+                "{{comment1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "17 — Анна завершает задачу",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks/{{task1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "tasks",
+                "{{task1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"done\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "18 — Оценка выполненной задачи",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/evaluation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "evaluation"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 5,\n  \"comment\": \"Задача выполнена качественно, все требования соблюдены.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "19 — Получение оценки исполнителем",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/evaluation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
                 "evaluation"
               ]
             }
-          },
-          "response": []
+          }
         },
         {
-          "name": "get evaluation",
+          "name": "20 — Сводка оценок Анны",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/tasks/1/evaluation",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/tasks/evaluations/me",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
-              "path": [
-                "tasks",
-                "1",
-                "evaluation"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "me evaluations",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://127.0.0.1:8000/tasks/evaluations/me",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
               "path": [
                 "tasks",
                 "evaluations",
                 "me"
               ]
             }
-          },
-          "response": []
+          }
+        },
+        {
+          "name": "21 — Просмотр задачи Марии",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user3Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task3Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task3Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "22 — Мария завершает задачу",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user3Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team2Id}}/tasks/{{task3Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team2Id}}",
+                "tasks",
+                "{{task3Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"done\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "23 — Оценка задачи Марии",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task3Id}}/evaluation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task3Id}}",
+                "evaluation"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 4,\n  \"comment\": \"Результат соответствует поставленной задаче.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
       ]
     },
     {
-      "name": "Meeting",
+      "name": "04 — Встречи и календарь",
+      "description": "Создание встреч, просмотр календаря, изменение участников и времени встречи.",
       "item": [
         {
-          "name": "all meet",
+          "name": "01 — Создание планёрки команды «Разработка»",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{team1Id}}"
               ]
             },
-            "method": "GET",
-            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Планёрка команды Разработка\",\n  \"description\": \"Встреча для проверки календаря и управления участниками.\",\n  \"starts_at\": \"{{meetingStart1}}\",\n  \"ends_at\": \"{{meetingEnd1}}\",\n  \"users\": [\n    \"{{user1Id}}\",\n    \"{{user2Id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const start = new Date();",
+                  "start.setUTCDate(start.getUTCDate() + 1);",
+                  "start.setUTCHours(9, 0, 0, 0);",
+                  "const end = new Date(start.getTime() + 60 * 60 * 1000);",
+                  "pm.collectionVariables.set('meetingStart1', start.toISOString());",
+                  "pm.collectionVariables.set('meetingEnd1', end.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('meeting1Id', d.id); pm.test('meeting 1 created',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Создание второй встречи команды «Разработка»",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/calendar",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/calendar/{{team1Id}}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
+              "path": [
+                "calendar",
+                "{{team1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Обсуждение результатов команды Разработка\",\n  \"description\": \"Встреча для проверки календаря и управления участниками.\",\n  \"starts_at\": \"{{meetingStart2}}\",\n  \"ends_at\": \"{{meetingEnd2}}\",\n  \"users\": [\n    \"{{user1Id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const start = new Date();",
+                  "start.setUTCDate(start.getUTCDate() + 1);",
+                  "start.setUTCHours(11, 0, 0, 0);",
+                  "const end = new Date(start.getTime() + 60 * 60 * 1000);",
+                  "pm.collectionVariables.set('meetingStart2', start.toISOString());",
+                  "pm.collectionVariables.set('meetingEnd2', end.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('meeting2Id', d.id); pm.test('meeting 2 created',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Создание встречи команды «Поддержка»",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{team2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{team2Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Планирование работ команды Поддержка\",\n  \"description\": \"Встреча для проверки календаря и управления участниками.\",\n  \"starts_at\": \"{{meetingStart3}}\",\n  \"ends_at\": \"{{meetingEnd3}}\",\n  \"users\": [\n    \"{{user3Id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const start = new Date();",
+                  "start.setUTCDate(start.getUTCDate() + 1);",
+                  "start.setUTCHours(14, 0, 0, 0);",
+                  "const end = new Date(start.getTime() + 60 * 60 * 1000);",
+                  "pm.collectionVariables.set('meetingStart3', start.toISOString());",
+                  "pm.collectionVariables.set('meetingEnd3', end.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { const d=pm.response.json(); pm.collectionVariables.set('meeting3Id', d.id); pm.test('meeting 3 created',()=>pm.response.to.have.status(200)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Просмотр общего календаря",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "calendar"
               ]
             }
-          },
-          "response": []
+          }
         },
         {
-          "name": "me meet",
+          "name": "05 — Просмотр календаря Анной",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/calendar/me",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/calendar",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
+              "path": [
+                "calendar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "06 — Встречи Марии",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user3Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "calendar",
                 "me"
               ]
             }
-          },
-          "response": []
+          }
         },
         {
-          "name": "create_meet",
+          "name": "07 — Фильтрация календаря по периоду",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{Super_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Общий сбор\",\r\n    \"description\": \"Мстители объявляют общий сбор\",\r\n    \"starts_at\": \"2022-09-25T12:00:00\",\r\n    \"ends_at\": \"2022-09-25T14:00:00\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://127.0.0.1:8000/calendar/4",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "calendar",
-                "4"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create_meet_users",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{Super_token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Общий сбор\",\r\n    \"description\": \"Мстители объявляют общий сбор\",\r\n    \"starts_at\": \"2021-09-25T12:00:00\",\r\n    \"ends_at\": \"2021-09-25T14:00:00\",\r\n    \"users\": [2]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://127.0.0.1:8000/calendar/4",
-              "protocol": "http",
-              "host": [
-                "127",
-                "0",
-                "0",
-                "1"
-              ],
-              "port": "8000",
-              "path": [
-                "calendar",
-                "4"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "limit meet",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
             "url": {
-              "raw": "http://127.0.0.1:8000/calendar?starts_at=2026-09-27",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/calendar?starts_at={{meetingStart1}}&ends_at={{meetingEnd2}}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "calendar"
               ],
               "query": [
                 {
                   "key": "starts_at",
-                  "value": "2026-09-27"
+                  "value": "{{meetingStart1}}"
+                },
+                {
+                  "key": "ends_at",
+                  "value": "{{meetingEnd2}}"
                 }
               ]
             }
+          }
+        },
+        {
+          "name": "08 — Участник без роли менеджера не может создать встречу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{team1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Запрещённая встреча\",\n  \"description\": \"Обычный участник не должен создавать встречу.\",\n  \"starts_at\": \"{{meetingStart1}}\",\n  \"ends_at\": \"{{meetingEnd1}}\",\n  \"users\": [\n    \"{{user1Id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('non-manager forbidden',()=>pm.expect(pm.response.code).to.be.oneOf([403,401,409]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Изменение времени и участников первой встречи",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{meeting1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{meeting1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"starts_at\": \"{{meetingStart1Updated}}\",\n  \"ends_at\": \"{{meetingEnd1Updated}}\",\n  \"users_add\": [\"{{user2Id}}\"],\n  \"users_remove\": [\"{{user1Id}}\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const start = new Date();",
+                  "start.setUTCDate(start.getUTCDate() + 1);",
+                  "start.setUTCHours(9, 30, 0, 0);",
+                  "const end = new Date(start.getTime() + 60 * 60 * 1000);",
+                  "pm.collectionVariables.set('meetingStart1Updated', start.toISOString());",
+                  "pm.collectionVariables.set('meetingEnd1Updated', end.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Встреча успешно изменена', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "access_token",
-      "value": ""
     },
     {
-      "key": "token_type",
-      "value": ""
-    },
-    {
-      "key": "Super_token",
-      "value": ""
-    },
-    {
-      "key": "Super_type",
-      "value": ""
+      "name": "05 — Проверка ошибочных запросов",
+      "description": "Набор запросов, которые должны завершаться ожидаемыми ошибками. Последний запрос удаляет участника из команды.",
+      "item": [
+        {
+          "name": "01 — Обычный участник не может исключать участников",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members/{{user2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "members",
+                "{{user2Id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Обычный участник не может исключать участников',()=>pm.expect(pm.response.code).to.be.oneOf([403,401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Недопустимый статус задачи",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks/{{task1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "tasks",
+                "{{task1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"not_a_status\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Недопустимое значение перечисления отклонено',()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — PATCH задачи: запрещённое значение null в названии",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/tasks/{{task1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "tasks",
+                "{{task1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Проверка обработки null в PATCH',()=>pm.expect(pm.response.code).to.be.oneOf([200,400,409,422,500]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — PATCH команды: запрещённое значение null в названии",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Проверка обработки null в PATCH',()=>pm.expect(pm.response.code).to.be.oneOf([200,400,409,422,500]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Несуществующая роль",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members/{{user1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "members",
+                "{{user1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"несуществующая_роль\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Несуществующая роль отклонена',()=>pm.expect(pm.response.code).to.be.oneOf([404,400,422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Неверный код приглашения",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user4Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "join"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invite_code\": \"wrong-code-0000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Неверный код приглашения отклонён',()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Повторная регистрация с занятыми email и логином",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user1Email}}\",\n  \"username\": \"{{user1Username}}\",\n  \"first_name\": \"Анна\",\n  \"last_name\": \"Тестов\",\n  \"password\": \"TestPass123!\",\n  \"age\": 31\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Повторная регистрация отклонена',()=>pm.expect(pm.response.code).to.be.oneOf([409,422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Вход с неверным паролем",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user1Email}}\",\n  \"password\": \"НеверныйПароль123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Неверные учётные данные отклонены',()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Оценка вне допустимого диапазона",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/evaluation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "evaluation"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 10,\n  \"comment\": \"Оценка вне допустимого диапазона\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Недопустимая оценка отклонена',()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Повторная оценка одной задачи",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{task1Id}}/evaluation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{task1Id}}",
+                "evaluation"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 3,\n  \"comment\": \"Повторная оценка не должна сохраняться\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Повторная оценка отклонена',()=>pm.expect(pm.response.code).to.be.oneOf([409,400,500]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Несуществующий идентификатор команды",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/999999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "999999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Команда не найдена',()=>pm.expect(pm.response.code).to.be.oneOf([404,403]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Несуществующий идентификатор задачи",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/999999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "999999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Задача не найдена или доступ запрещён',()=>pm.expect(pm.response.code).to.be.oneOf([403,404]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Запрос без токена авторизации",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Запрос без токена отклонён',()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 — Создание встречи с некорректным временным интервалом",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{team1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{team1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Встреча с некорректным временем\",\n  \"description\": \"Время окончания раньше времени начала\",\n  \"starts_at\": \"2020-01-01T10:00:00Z\",\n  \"ends_at\": \"2020-01-01T09:00:00Z\",\n  \"users\": [\n    \"{{user1Id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Некорректный временной интервал отклонён',()=>pm.expect(pm.response.code).to.be.oneOf([400,422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 — Изменение встречи не её организатором",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user1Token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{meeting1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{meeting1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"starts_at\": \"{{meetingStart1Updated}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Изменение встречи не организатором запрещено', () => pm.expect(pm.response.code).to.be.oneOf([403, 401]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Изменение встречи: дата начала в прошлом",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{meeting1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{meeting1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"starts_at\": \"2020-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Дата начала в прошлом отклонена', () => pm.expect(pm.response.code).to.be.oneOf([400, 422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 — Изменение встречи: окончание раньше начала",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{meeting1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{meeting1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ends_at\": \"{{meetingStart1}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Окончание раньше начала отклонено', () => pm.expect(pm.response.code).to.be.oneOf([400, 422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 — Изменение встречи: длительность больше восьми часов",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{meeting1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{meeting1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ends_at\": \"{{meetingEndTooLong}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const startStr = pm.collectionVariables.get('meetingStart1');",
+                  "const start = startStr ? new Date(startStr) : new Date();",
+                  "const end = new Date(start.getTime() + 9 * 60 * 60 * 1000);",
+                  "pm.collectionVariables.set('meetingEndTooLong', end.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Слишком большая длительность отклонена', () => pm.expect(pm.response.code).to.be.oneOf([400, 422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19 — Изменение встречи: пересечение по времени",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/calendar/{{meeting1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calendar",
+                "{{meeting1Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"starts_at\": \"{{meetingStart2}}\",\n  \"ends_at\": \"{{meetingEnd2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Пересечение встреч по времени отклонено', () => pm.expect(pm.response.code).to.be.oneOf([409]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Последний запрос — исключение Бориса из команды",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teams/{{team1Id}}/members/{{user2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "teams",
+                "{{team1Id}}",
+                "members",
+                "{{user2Id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Менеджер исключил участника',()=>pm.expect(pm.response.code).to.be.oneOf([204,200]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

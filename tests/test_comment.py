@@ -1,3 +1,6 @@
+from app.services.auth import create_jwt_token
+
+
 async def test_create_task_comment(
     create_task,
     create_jwt,
@@ -27,9 +30,10 @@ async def test_create_task_comment(
 
 async def test_create_comment_for_foreign_task(
     create_task,
-    create_bad_jwt,
+    create_users_not_in_team,
     client,
 ):
+    token = create_jwt_token(create_users_not_in_team.id)
     comment_data = {
         'text': 'Чужой комментарий',
     }
@@ -39,12 +43,12 @@ async def test_create_comment_for_foreign_task(
         json=comment_data,
         headers={
             'Authorization': (
-                f"Bearer {create_bad_jwt['token']['access_token']}"
+                f"Bearer {token['access_token']}"
             ),
         },
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 404
 
 async def test_get_task_comments(
     create_task,

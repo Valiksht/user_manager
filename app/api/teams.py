@@ -79,13 +79,13 @@ async def team_create(
 @router.patch(
     '/{team_id}',
     response_model=TeamResponseDetail,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     summary='Изменить информацию о команде.',
 )
 async def team_update(   
     team_data: TeamUpdate,
     team_obj: Team = Depends(get_team_obj),
-    user: User = Depends(get_current_admin),
+    user: User = Depends(get_current_manager_by_team),
     manager_role: Role = Depends(get_manager_role),
     db: AsyncSession = Depends(get_db),
 ):
@@ -97,18 +97,7 @@ async def team_update(
     Данные команды обновляются в соответствии с переданными значениями.
     """
     team = await update_team(team_obj, team_data, db)
-    return TeamResponseDetail(
-        id=team.id,
-        name=team.name,
-        description=team.description,
-        members=[
-            RoleInTeamResponse(
-                name=manager_role.name,
-                description=manager_role.description,
-                members=[UserResponse.model_validate(user)],
-            )
-        ],
-    )
+    return team
 
 
 @router.post(
@@ -197,6 +186,7 @@ async def team_members(
 @router.patch(
     '/{team_id}/members/{user_id}',
     response_model=RoleInTeamResponse,
+    status_code=status.HTTP_200_OK,
     summary='Изменить роль.',
 )
 async def update_role(

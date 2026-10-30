@@ -27,7 +27,7 @@ async def check_user_unique(
     user_exist = await get_user_from_email_or_username(user_data, db)
     if user_exist:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail='Email или username уже заняты',
         )
     return user_data
